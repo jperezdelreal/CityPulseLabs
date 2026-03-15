@@ -7,6 +7,10 @@ export type {
   GBFSDiscoveryData,
   VehicleTypeAvailable,
   VehicleDockAvailable,
+  GeofencingRule,
+  GeofencingZoneProperties,
+  GeofencingZoneFeature,
+  GeofencingZonesCollection,
 } from './gbfs.ts';
 
 // Backward-compatible aliases

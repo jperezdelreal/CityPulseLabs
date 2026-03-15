@@ -5,6 +5,8 @@ import StationMarkers from './StationMarkers.tsx';
 import LiveIndicator from './LiveIndicator.tsx';
 import LocationPicker from './LocationPicker.tsx';
 import RouteDisplay from './RouteDisplay.tsx';
+import GeofencingOverlay from './GeofencingOverlay.tsx';
+import { useGeofencing } from '../../hooks/useGeofencing.ts';
 
 const A_CORUNA_CENTER = { lat: 43.3623, lng: -8.4115 };
 const DEFAULT_ZOOM = 14;
@@ -34,6 +36,8 @@ export default function MapView({
   onSetDestination,
   onClearRoute,
 }: MapViewProps) {
+  const { zones, loading: zonesLoading } = useGeofencing();
+
   return (
     <div className="relative h-full w-full">
       <LiveIndicator lastUpdated={lastUpdated} />
@@ -48,6 +52,7 @@ export default function MapView({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <GeofencingOverlay zones={zones} loading={zonesLoading} />
         <StationMarkers
           stations={stations}
           selectedStationId={selectedStationId}
