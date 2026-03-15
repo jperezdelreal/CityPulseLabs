@@ -1,0 +1,294 @@
+/**
+ * Base component styles for BiciCoruña
+ * Station markers, panels, buttons, loading and error states
+ */
+
+@layer components {
+  /* Station Marker Styles */
+  .station-marker {
+    @apply flex items-center justify-center;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .station-marker-good {
+    @apply bg-emerald-500 text-white;
+  }
+
+  .station-marker-limited {
+    @apply bg-amber-400 text-gray-900;
+  }
+
+  .station-marker-empty {
+    @apply bg-red-500 text-white;
+  }
+
+  .station-marker-offline {
+    @apply bg-gray-400 text-white;
+  }
+
+  /* Marker pulse animation for live data */
+  .station-marker-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* Panel Styles (station info, route info) */
+  .panel {
+    @apply bg-white rounded-lg shadow-lg;
+    border: 1px solid #e5e7eb;
+  }
+
+  .panel-header {
+    @apply px-6 py-4 border-b border-gray-200;
+  }
+
+  .panel-body {
+    @apply px-6 py-4;
+  }
+
+  .panel-footer {
+    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+  }
+
+  /* Mobile bottom sheet panel */
+  .panel-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 40;
+    animation: slideUp 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Button Styles */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-250;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn-primary {
+    @apply bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800;
+  }
+
+  .btn-primary:disabled {
+    @apply bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400;
+  }
+
+  .btn-secondary:disabled {
+    @apply bg-gray-100 text-gray-400 cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1 text-sm;
+    min-height: 36px;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+    min-height: 48px;
+  }
+
+  /* Loading States */
+  .skeleton {
+    @apply bg-gray-200 animate-pulse;
+    border-radius: 4px;
+  }
+
+  .skeleton-text {
+    @apply h-4 bg-gray-200 rounded animate-pulse;
+    width: 100%;
+  }
+
+  .skeleton-circle {
+    @apply bg-gray-200 rounded-full animate-pulse;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(15, 152, 94, 0.1);
+    border-top-color: #0f985e;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    @apply fixed inset-0 bg-black/30 flex items-center justify-center;
+    z-index: 50;
+  }
+
+  /* Error States */
+  .alert {
+    @apply px-4 py-3 rounded-lg border;
+  }
+
+  .alert-error {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+
+  .alert-warning {
+    @apply bg-amber-50 border-amber-200 text-amber-800;
+  }
+
+  .alert-success {
+    @apply bg-emerald-50 border-emerald-200 text-emerald-800;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+  }
+
+  /* Route visualization */
+  .route-line-bike {
+    stroke: #0d9a5e;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  .route-line-walk {
+    stroke: #0066cc;
+    stroke-width: 3;
+    stroke-dasharray: 6, 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  /* Station Info Card */
+  .station-card {
+    @apply bg-white rounded-lg p-4 border border-gray-200;
+  }
+
+  .station-card-title {
+    @apply text-lg font-semibold text-gray-900 mb-2;
+  }
+
+  .station-card-stat {
+    @apply flex justify-between items-center py-2 text-sm;
+  }
+
+  .station-card-stat-label {
+    @apply text-gray-600;
+  }
+
+  .station-card-stat-value {
+    @apply font-semibold text-gray-900;
+  }
+
+  /* Responsive utilities */
+  @media (max-width: 640px) {
+    .btn {
+      min-height: 44px;
+      padding: 12px 16px;
+    }
+
+    .panel-mobile {
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .panel {
+      @apply bg-gray-800 border-gray-700;
+    }
+
+    .panel-header {
+      @apply border-gray-700;
+    }
+
+    .panel-body {
+      @apply text-gray-200;
+    }
+
+    .panel-footer {
+      @apply border-gray-700 bg-gray-900;
+    }
+
+    .station-card {
+      @apply bg-gray-800 border-gray-700;
+    }
+
+    .station-card-title {
+      @apply text-gray-100;
+    }
+
+    .station-card-stat-label {
+      @apply text-gray-400;
+    }
+
+    .station-card-stat-value {
+      @apply text-gray-200;
+    }
+
+    .alert-error {
+      @apply bg-red-900/20 border-red-700 text-red-300;
+    }
+
+    .alert-warning {
+      @apply bg-amber-900/20 border-amber-700 text-amber-300;
+    }
+
+    .alert-success {
+      @apply bg-emerald-900/20 border-emerald-700 text-emerald-300;
+    }
+
+    .alert-info {
+      @apply bg-blue-900/20 border-blue-700 text-blue-300;
+    }
+  }
+}
