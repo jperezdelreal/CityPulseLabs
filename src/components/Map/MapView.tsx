@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { StationData, LatLng, MultiModalRoute } from '../../types/index.ts';
+import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import StationMarkers from './StationMarkers.tsx';
 import LiveIndicator from './LiveIndicator.tsx';
 import LocationPicker from './LocationPicker.tsx';
@@ -22,6 +23,7 @@ interface MapViewProps {
   onSetOrigin: (point: LatLng) => void;
   onSetDestination: (point: LatLng) => void;
   onClearRoute: () => void;
+  preferredBikeType?: BikeType;
 }
 
 export default function MapView({
@@ -35,6 +37,7 @@ export default function MapView({
   onSetOrigin,
   onSetDestination,
   onClearRoute,
+  preferredBikeType = 'any',
 }: MapViewProps) {
   const { zones, loading: zonesLoading } = useGeofencing();
 
@@ -57,6 +60,7 @@ export default function MapView({
           stations={stations}
           selectedStationId={selectedStationId}
           onStationSelect={onStationSelect}
+          preferredBikeType={preferredBikeType}
         />
         <LocationPicker
           origin={origin}

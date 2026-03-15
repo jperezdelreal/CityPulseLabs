@@ -140,7 +140,10 @@ describe('StationPopup', () => {
       ],
     });
     render(<StationPopup station={station} />);
-    expect(screen.getByText('6 FIT')).toBeInTheDocument();
-    expect(screen.getByText('2 EFIT')).toBeInTheDocument();
+    // Each type renders as: icon + label (e.g. "🔧 FIT") and count separately
+    expect(screen.getByText('🔧 FIT')).toBeInTheDocument();
+    expect(screen.getByText('⚡ EFIT')).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 });

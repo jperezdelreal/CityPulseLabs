@@ -1,6 +1,7 @@
 import type { StationData } from '../types/gbfs.ts';
 import type { LatLng, MultiModalRoute, WalkingRoute, StationSummary } from '../types/index.ts';
 import { haversineDistance, getWalkingRoute, getCyclingRoute } from './routing.ts';
+import { type BikeType, getVehicleTypeCount } from './bikeTypeFilter.ts';
 
 const MAX_WALKING_DISTANCE_M = 1000;
 const TOP_N = 3;
@@ -21,11 +22,12 @@ export function filterPickupStations(
   stations: StationData[],
   origin: LatLng,
   maxDistance = MAX_WALKING_DISTANCE_M,
+  bikeType: BikeType = 'any',
 ): StationData[] {
   return stations
     .filter(
       (s) =>
-        s.num_bikes_available > 0 &&
+        getVehicleTypeCount(s, bikeType) > 0 &&
         s.is_renting &&
         haversineDistance(origin.lat, origin.lng, s.lat, s.lon) <= maxDistance,
     )
@@ -61,8 +63,9 @@ export async function calculateMultiModalRoutes(
   origin: LatLng,
   destination: LatLng,
   stations: StationData[],
+  bikeType: BikeType = 'any',
 ): Promise<MultiModalRoute[]> {
-  const pickups = filterPickupStations(stations, origin).slice(0, MAX_CANDIDATES);
+  const pickups = filterPickupStations(stations, origin, MAX_WALKING_DISTANCE_M, bikeType).slice(0, MAX_CANDIDATES);
   const dropoffs = filterDropoffStations(stations, destination).slice(0, MAX_CANDIDATES);
 
   if (pickups.length === 0 || dropoffs.length === 0) {

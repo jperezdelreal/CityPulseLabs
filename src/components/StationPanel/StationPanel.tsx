@@ -1,4 +1,5 @@
 import type { StationData } from '../../types/index.ts';
+import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { getAvailabilityLevel } from '../../utils/stationColors.ts';
 import { colors } from '../../styles/tokens.ts';
 
@@ -8,6 +9,7 @@ interface StationPanelProps {
   error: string | null;
   lastUpdated: Date | null;
   onClose?: () => void;
+  preferredBikeType?: BikeType;
 }
 
 const levelLabels: Record<string, string> = {
@@ -31,6 +33,7 @@ export default function StationPanel({
   error,
   lastUpdated,
   onClose,
+  preferredBikeType = 'any',
 }: StationPanelProps) {
   if (error) {
     return (
@@ -66,10 +69,6 @@ export default function StationPanel({
 
   const level = getAvailabilityLevel(station);
   const statusColor = colors.availability[level];
-  const fitCount =
-    station.vehicle_types_available.find((v) => v.vehicle_type_id === 'FIT')?.count ?? 0;
-  const efitCount =
-    station.vehicle_types_available.find((v) => v.vehicle_type_id === 'EFIT')?.count ?? 0;
   const hasVehicleTypes = station.vehicle_types_available.length > 0;
 
   return (
@@ -125,10 +124,29 @@ export default function StationPanel({
 
         {/* Vehicle types */}
         {hasVehicleTypes && (
-          <div className="text-xs text-gray-500">
-            {fitCount > 0 && <span>{fitCount} FIT</span>}
-            {fitCount > 0 && efitCount > 0 && <span> · </span>}
-            {efitCount > 0 && <span>{efitCount} EFIT</span>}
+          <div className="grid grid-cols-3 gap-2 text-xs" data-testid="vehicle-type-breakdown">
+            {station.vehicle_types_available.map((vt) => {
+              const isPreferred =
+                preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;
+              const icons: Record<string, string> = { FIT: '🔧', EFIT: '⚡', BOOST: '🚀' };
+              const icon = icons[vt.vehicle_type_id] ?? '🚲';
+              return (
+                <div
+                  key={vt.vehicle_type_id}
+                  className={`flex flex-col items-center rounded-lg p-2 ${
+                    isPreferred
+                      ? 'bg-blue-50 ring-2 ring-blue-500'
+                      : 'bg-gray-50'
+                  }`}
+                >
+                  <span className="text-base">{icon}</span>
+                  <span className={`font-semibold ${isPreferred ? 'text-blue-700' : 'text-gray-800'}`}>
+                    {vt.count}
+                  </span>
+                  <span className="text-gray-500">{vt.vehicle_type_id}</span>
+                </div>
+              );
+            })}
           </div>
         )}
 
