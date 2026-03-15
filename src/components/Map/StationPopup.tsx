@@ -1,8 +1,10 @@
 import { Popup } from 'react-leaflet';
 import type { StationData } from '../../types/index.ts';
+import type { BikeType } from '../../services/bikeTypeFilter.ts';
 
 interface StationPopupProps {
   station: StationData;
+  preferredBikeType?: BikeType;
 }
 
 function formatLastReported(timestamp: number): string {
@@ -12,11 +14,13 @@ function formatLastReported(timestamp: number): string {
   return Math.floor(seconds / 3600) + 'h ago';
 }
 
-export default function StationPopup({ station }: StationPopupProps) {
-  const fitCount =
-    station.vehicle_types_available.find((v) => v.vehicle_type_id === 'FIT')?.count ?? 0;
-  const efitCount =
-    station.vehicle_types_available.find((v) => v.vehicle_type_id === 'EFIT')?.count ?? 0;
+const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
+  FIT: { icon: '🔧', label: 'FIT' },
+  EFIT: { icon: '⚡', label: 'EFIT' },
+  BOOST: { icon: '🚀', label: 'BOOST' },
+};
+
+export default function StationPopup({ station, preferredBikeType = 'any' }: StationPopupProps) {
   const hasVehicleTypes = station.vehicle_types_available.length > 0;
 
   return (
@@ -40,10 +44,26 @@ export default function StationPopup({ station }: StationPopupProps) {
           </div>
 
           {hasVehicleTypes && (
-            <div className="pt-1 border-t border-gray-200 text-gray-500">
-              {fitCount > 0 && <span>{fitCount} FIT</span>}
-              {fitCount > 0 && efitCount > 0 && <span>, </span>}
-              {efitCount > 0 && <span>{efitCount} EFIT</span>}
+            <div className="pt-1 border-t border-gray-200 space-y-0.5">
+              {station.vehicle_types_available.map((vt) => {
+                const meta = TYPE_LABELS[vt.vehicle_type_id];
+                if (!meta) return null;
+                const isPreferred =
+                  preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;
+                return (
+                  <div
+                    key={vt.vehicle_type_id}
+                    className={`flex justify-between items-center ${
+                      isPreferred ? 'font-semibold text-blue-700' : 'text-gray-500'
+                    }`}
+                  >
+                    <span>
+                      {meta.icon} {meta.label}
+                    </span>
+                    <span>{vt.count}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
 

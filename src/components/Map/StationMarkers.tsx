@@ -1,5 +1,6 @@
 import { CircleMarker } from 'react-leaflet';
 import type { StationData } from '../../types/index.ts';
+import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { getMarkerColor } from '../../utils/stationColors.ts';
 import StationPopup from './StationPopup.tsx';
 
@@ -7,12 +8,14 @@ interface StationMarkersProps {
   stations: StationData[];
   selectedStationId?: string | null;
   onStationSelect?: (station: StationData) => void;
+  preferredBikeType?: BikeType;
 }
 
 export default function StationMarkers({
   stations,
   selectedStationId,
   onStationSelect,
+  preferredBikeType = 'any',
 }: StationMarkersProps) {
   return (
     <>
@@ -33,7 +36,7 @@ export default function StationMarkers({
               click: () => onStationSelect?.(station),
             }}
           >
-            <StationPopup station={station} />
+            <StationPopup station={station} preferredBikeType={preferredBikeType} />
           </CircleMarker>
         );
       })}
