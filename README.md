@@ -11,19 +11,22 @@
 
 ## Project Status
 
-🟡 **v0.1 — In Development** (Wave 2 Complete)
+🟢 **v0.1 — Feature Complete** (pending Azure deployment)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Project scaffolding | ✅ Done | React 19 + Vite + TypeScript + Tailwind + Leaflet |
 | Azure infrastructure (IaC) | ✅ Done | Bicep templates for SWA + Functions + Cosmos DB |
-| GBFS data integration | ✅ Done | TypeScript service with types, hooks, proxy function |
-| Data collection pipeline | ✅ Done | Timer Trigger → Cosmos DB (not deployed) |
-| Interactive map | 🔄 In Progress | Live station markers, map interactions (Wave 3) |
-| Route calculator | 🔄 In Progress | Multi-modal routing (Walk→Bike→Walk) (Wave 3) |
+| GBFS data integration | ✅ Done | TypeScript service with types, hooks, proxy function (12 tests) |
+| Data collection pipeline | ✅ Done | Timer Trigger → Cosmos DB (15 tests) |
+| Interactive map | ✅ Done | Live station markers, popups, live indicator (15 tests) |
+| Route calculator | ✅ Done | Multi-modal routing (Walk→Bike→Walk, 19 tests) |
 | CI/CD pipeline | ✅ Done | GitHub Actions for SWA deployment |
 | UI/UX design system | ✅ Done | Color tokens, responsive breakpoints, map styling |
-| Live deployment | ⏳ Pending | Ready for Azure deployment |
+| Documentation | ✅ Done | Architecture & data sources documentation |
+| Azure deployment | ⏳ Pending | IaC ready, deployment pending |
+
+**Total Test Coverage**: 63+ tests (GBFS: 12, Data Pipeline: 15, Map: 15, Routing: 19, API: 2)
 
 ---
 
@@ -235,15 +238,16 @@ For detailed deployment options, see [docs/architecture.md](docs/architecture.md
 
 ## Project Roadmap
 
-### v0.1 — MVP (Wave 2 Complete ✅)
+### v0.1 — MVP (Wave 3 Complete ✅)
 - ✅ Project scaffolding (React 19 + Vite + TS + Tailwind + Leaflet)
 - ✅ Azure IaC (Bicep templates for SWA, Functions, Cosmos DB Serverless)
 - ✅ GBFS integration service (TypeScript, hooks, proxy function, auto-polling)
 - ✅ Data collection pipeline (Timer Trigger → Cosmos DB)
+- ✅ Interactive map with live station markers (Wave 3 complete)
+- ✅ Multi-modal route calculator (Walk→Bike→Walk) (Wave 3 complete)
 - ✅ CI/CD pipeline (GitHub Actions for SWA deployment)
 - ✅ UI/UX design system (colors, tokens, responsive breakpoints)
-- 🔄 Interactive map with live station markers (Wave 3 in progress)
-- 🔄 Multi-modal route calculator (Walk→Bike→Walk) (Wave 3 in progress)
+- ✅ Documentation (architecture, data sources)
 
 ### v0.2 — Demand Prediction (Planned)
 - 📋 AI-powered station occupancy forecasting
