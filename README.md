@@ -12,6 +12,7 @@
 ## Project Status
 
 🟢 **v0.1 — Feature Complete** (pending Azure deployment)
+🟢 **v0.2 — Feature Complete**
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -25,8 +26,14 @@
 | UI/UX design system | ✅ Done | Color tokens, responsive breakpoints, map styling |
 | Documentation | ✅ Done | Architecture & data sources documentation |
 | Azure deployment | ⏳ Pending | IaC ready, deployment pending |
+| Confidence score | ✅ Done | Heuristic 🟢🟡🔴 availability badges for pickup/dropoff (18 tests) |
+| Bike type filtering | ✅ Done | FIT/EFIT/BOOST selector with station-level counts (17 tests) |
+| Rain warning | ✅ Done | Real-time precipitation alerts via Open-Meteo (7 tests) |
+| Route stats | ✅ Done | Distance, time, calories, CO₂ savings per route (16 tests) |
+| Geofencing | ✅ Done | Service area overlay with out-of-zone warnings (29 tests) |
+| Basic prediction (#9) | 📋 Planned | Requires Azure deployment + historical data collection |
 
-**Total Test Coverage**: 63+ tests (GBFS: 12, Data Pipeline: 15, Map: 15, Routing: 19, API: 2)
+**Total Test Coverage**: 155 tests (GBFS: 12, Data Pipeline: 15, Map: 15, Routing: 19, API: 2, Bike Type: 17, Confidence: 18, Rain: 7, Stats: 16, Geofencing: 29, Weather: 5)
 
 ---
 
@@ -44,13 +51,17 @@ Real-time data + AI predictions = confident route planning
 Rain warning: ☂️ 65% chance in 15 minutes
 ```
 
-### Key Features (Roadmap)
+### Key Features
 
 - **Live Station Data**: Real-time bike and dock availability across 55 BiciCoruña stations ✅
-- **Demand Prediction**: AI forecasts station occupancy (v0.2)
-- **Weather Integration**: Rain and temperature alerts for better trip planning (planned)
-- **Intermodal Routes**: Seamless walking + biking combinations (🔄 in progress)
+- **Confidence Scores**: 🟢🟡🔴 heuristic availability badges so you know if a bike/dock will still be there ✅
+- **Bike Type Filtering**: Filter stations by FIT, EFIT, or BOOST bike types ✅
+- **Weather Integration**: Rain warnings and precipitation alerts via Open-Meteo ✅
+- **Route Stats**: Distance, time, calories burned, and CO₂ savings per route ✅
+- **Geofencing**: Service area overlay with out-of-zone warnings ✅
+- **Intermodal Routes**: Seamless walking + biking combinations ✅
 - **Responsive Web UI**: Works on desktop and mobile devices ✅
+- **Demand Prediction**: AI forecasts station occupancy (planned — requires Azure deployment + historical data)
 
 ---
 
@@ -249,15 +260,16 @@ For detailed deployment options, see [docs/architecture.md](docs/architecture.md
 - ✅ UI/UX design system (colors, tokens, responsive breakpoints)
 - ✅ Documentation (architecture, data sources)
 
-### v0.2 — Demand Prediction (Planned)
-- 📋 AI-powered station occupancy forecasting
-- 📋 Confidence scores for predictions
-- 📋 Bike type filtering (pedal vs e-bike)
-- 📋 Rain warnings and weather integration
-- 📋 Demand statistics and analytics
+### v0.2 — Smart Features (Complete ✅)
+- ✅ Confidence scores for route availability (heuristic 🟢🟡🔴 badges)
+- ✅ Bike type filtering (FIT / EFIT / BOOST)
+- ✅ Rain warnings and weather integration
+- ✅ Route stats (distance, time, calories, CO₂)
+- ✅ Geofencing zones overlay
+- 📋 Basic prediction (#9) — requires Azure deployment + historical data collection
 
 ### v0.3 — Enhanced Intelligence (Planned)
-- 📋 Predictive confidence scoring
+- 📋 AI-powered station occupancy forecasting
 - 📋 Personalized route suggestions
 - 📋 Seasonal demand patterns
 - 📋 Event-based predictions
