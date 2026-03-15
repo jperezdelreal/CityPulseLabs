@@ -74,3 +74,36 @@ export interface GBFSDiscoveryData {
     feeds: GBFSFeed[];
   };
 }
+
+// --- Geofencing zones (GBFS v2) ---
+
+/** Rule applied to a geofencing zone */
+export interface GeofencingRule {
+  ride_allowed: boolean;
+  ride_through_allowed: boolean;
+  maximum_speed_kph?: number;
+  station_parking?: boolean;
+  vehicle_type_id?: string[];
+}
+
+/** Properties attached to a geofencing zone feature */
+export interface GeofencingZoneProperties {
+  name: string;
+  rules?: GeofencingRule[];
+}
+
+/** A single GeoJSON feature representing a geofencing zone */
+export interface GeofencingZoneFeature {
+  type: 'Feature';
+  geometry: {
+    type: 'MultiPolygon' | 'Polygon';
+    coordinates: number[][][][] | number[][][];
+  };
+  properties: GeofencingZoneProperties;
+}
+
+/** GeoJSON FeatureCollection of geofencing zones */
+export interface GeofencingZonesCollection {
+  type: 'FeatureCollection';
+  features: GeofencingZoneFeature[];
+}
