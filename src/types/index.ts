@@ -1,37 +1,22 @@
-/** GBFS v2 types for BiciCoruña station data */
+export type {
+  StationInformation,
+  StationStatus,
+  StationData,
+  GBFSResponse,
+  GBFSFeed,
+  GBFSDiscoveryData,
+  VehicleTypeAvailable,
+  VehicleDockAvailable,
+} from './gbfs.ts';
 
-export interface StationInfo {
-  station_id: string;
-  name: string;
-  lat: number;
-  lon: number;
-  capacity: number;
-  address?: string;
-}
-
-export interface StationStatus {
-  station_id: string;
-  num_bikes_available: number;
-  num_docks_available: number;
-  is_renting: boolean;
-  is_returning: boolean;
-  last_reported: number;
-}
-
-export interface Station extends StationInfo {
-  status?: StationStatus;
-}
+// Backward-compatible aliases
+export type { StationInformation as StationInfo } from './gbfs.ts';
+export type { StationData as Station } from './gbfs.ts';
 
 export interface Route {
-  walkToStation: StationInfo;
-  bikeToStation: StationInfo;
-  walkToDest: number; // meters
-  totalDistance: number; // meters
-  totalTime: number; // seconds
-}
-
-export interface GBFSResponse<T> {
-  last_updated: number;
-  ttl: number;
-  data: T;
+  walkToStation: { station_id: string; name: string; lat: number; lon: number; capacity: number };
+  bikeToStation: { station_id: string; name: string; lat: number; lon: number; capacity: number };
+  walkToDest: number;
+  totalDistance: number;
+  totalTime: number;
 }
