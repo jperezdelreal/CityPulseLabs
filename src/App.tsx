@@ -3,6 +3,7 @@ import MapView from './components/Map/MapView.tsx';
 import StationPanel from './components/StationPanel/StationPanel.tsx';
 import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
 import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
+import OfflineIndicator from './components/shared/OfflineIndicator.tsx';
 import { useStations } from './hooks/useStations.ts';
 import { useRoutes } from './hooks/useRoutes.ts';
 import { type BikeType, filterByBikeType } from './services/bikeTypeFilter.ts';
@@ -33,6 +34,7 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col">
+      <OfflineIndicator lastUpdated={lastUpdated} />
       <header className="bg-blue-700 text-white px-4 py-2 flex items-center gap-2 shrink-0">
         <span className="text-xl font-bold">🚲 BiciCoruña</span>
         <span className="text-sm opacity-80 hidden sm:inline">Smart bike-sharing route planner</span>
