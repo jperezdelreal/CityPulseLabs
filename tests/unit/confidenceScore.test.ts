@@ -1,9 +1,11 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   calculatePickupConfidence,
   calculateDropoffConfidence,
+  calculatePredictiveConfidence,
   routeConfidence,
 } from '../../src/services/confidenceScore.ts';
+import type { StationPrediction } from '../../src/services/confidenceScore.ts';
 import type { StationData } from '../../src/types/gbfs.ts';
 
 function makeStation(overrides: Partial<StationData> = {}): StationData {
@@ -140,5 +142,96 @@ describe('routeConfidence', () => {
     const r = routeConfidence(p, d);
     expect(r.level).toBe('low');
     expect(r.score).toBe(5);
+  });
+});
+
+describe('calculatePredictiveConfidence', () => {
+  it('falls back to basic confidence when no prediction provided', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const result = calculatePredictiveConfidence(s, 3);
+    expect(result.level).toBe('high');
+    expect(result.predictedLevel).toBeUndefined();
+    expect(result.predictedReason).toBeUndefined();
+  });
+
+  it('falls back to basic confidence when prediction is undefined', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const result = calculatePredictiveConfidence(s, 3, undefined);
+    expect(result.level).toBe('high');
+    expect(result.predictedLevel).toBeUndefined();
+  });
+
+  it('downgrades from high to medium when prediction shows drop', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 6,
+      predicted_docks_available: 14,
+      minutes_ahead: 30,
+    };
+    const result = calculatePredictiveConfidence(s, 3, prediction);
+    expect(result.level).toBe('medium');
+    expect(result.predictedLevel).toBe('medium');
+    expect(result.predictedReason).toContain('15');
+    expect(result.predictedReason).toContain('6');
+  });
+
+  it('downgrades from high to low when prediction shows severe drop', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 2,
+      predicted_docks_available: 18,
+      minutes_ahead: 30,
+    };
+    const result = calculatePredictiveConfidence(s, 3, prediction);
+    expect(result.level).toBe('low');
+    expect(result.predictedLevel).toBe('low');
+  });
+
+  it('does not upgrade when prediction is better than current', () => {
+    const s = makeStation({ num_bikes_available: 4, capacity: 20 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 15,
+      predicted_docks_available: 5,
+      minutes_ahead: 30,
+    };
+    const result = calculatePredictiveConfidence(s, 3, prediction);
+    expect(result.level).toBe('low');
+    expect(result.predictedLevel).toBeUndefined();
+  });
+
+  it('keeps current level when prediction is same tier', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 12,
+      predicted_docks_available: 8,
+      minutes_ahead: 30,
+    };
+    const result = calculatePredictiveConfidence(s, 3, prediction);
+    expect(result.level).toBe('high');
+    expect(result.predictedLevel).toBeUndefined();
+  });
+
+  it('returns basic confidence for zero-capacity station even with prediction', () => {
+    const s = makeStation({ num_bikes_available: 0, capacity: 0 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 5,
+      predicted_docks_available: 5,
+      minutes_ahead: 30,
+    };
+    const result = calculatePredictiveConfidence(s, 3, prediction);
+    expect(result.level).toBe('low');
+    expect(result.score).toBe(0);
+  });
+
+  it('blends scores when prediction causes downgrade', () => {
+    const s = makeStation({ num_bikes_available: 15, capacity: 20 });
+    const prediction: StationPrediction = {
+      predicted_bikes_available: 6,
+      predicted_docks_available: 14,
+      minutes_ahead: 30,
+    };
+    const basic = calculatePickupConfidence(s, 3);
+    const predictive = calculatePredictiveConfidence(s, 3, prediction);
+    expect(predictive.score).toBeLessThan(basic.score);
   });
 });

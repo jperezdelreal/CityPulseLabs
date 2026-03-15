@@ -7,6 +7,28 @@ const MAX_WALKING_DISTANCE_M = 1000;
 const TOP_N = 3;
 // Limit candidate pairs to avoid excessive API calls
 const MAX_CANDIDATES = 6;
+// EFIT bonus: extra score points when preferred EFIT is available
+const EFIT_BONUS_SECONDS = -120;
+
+/** Speed factor per bike type: lower = faster */
+export const BIKE_TYPE_SPEED_FACTOR: Record<BikeType, number> = {
+  any: 1,
+  FIT: 1,
+  EFIT: 0.8,
+  BOOST: 0.85,
+};
+
+/** Human-readable label for bike type advantage */
+export function getBikeTypeLabel(bikeType: BikeType): string | null {
+  switch (bikeType) {
+    case 'EFIT':
+      return '\u26A1 El\u00E9ctrica \u2014 20% m\u00E1s r\u00E1pido en cuestas';
+    case 'BOOST':
+      return '\u{1F680} Boost \u2014 15% m\u00E1s r\u00E1pido en cuestas';
+    default:
+      return null;
+  }
+}
 
 function toStationSummary(station: StationData): StationSummary {
   return {
@@ -94,7 +116,8 @@ export async function calculateMultiModalRoutes(
     .sort((a, b) => a.estimatedDist - b.estimatedDist)
     .slice(0, MAX_CANDIDATES);
 
-  const routes: MultiModalRoute[] = [];
+  type ScoredRoute = MultiModalRoute & { _scoring_time: number };
+  const routes: ScoredRoute[] = [];
 
   for (const { pickup, dropoff } of sortedPairs) {
     try {
@@ -108,7 +131,15 @@ export async function calculateMultiModalRoutes(
       ]);
 
       const walkTime = walkToPickup.duration_seconds + walkToDest.duration_seconds;
-      const bikeTime = bikeSegment.duration_seconds;
+      const rawBikeTime = bikeSegment.duration_seconds;
+      const speedFactor = BIKE_TYPE_SPEED_FACTOR[bikeType] ?? 1;
+      const bikeTime = Math.round(rawBikeTime * speedFactor);
+
+      // Bonus for EFIT preference when EFIT bikes are available at station
+      const efitBonus =
+        bikeType === 'EFIT' && getVehicleTypeCount(pickup, 'EFIT') > 0
+          ? EFIT_BONUS_SECONDS
+          : 0;
 
       routes.push({
         pickup_station: toStationSummary(pickup),
@@ -121,6 +152,7 @@ export async function calculateMultiModalRoutes(
         bike_time_seconds: bikeTime,
         walk_distance_meters: walkToPickup.distance_meters + walkToDest.distance_meters,
         bike_distance_meters: bikeSegment.distance_meters,
+        _scoring_time: walkTime + bikeTime + efitBonus,
       });
     } catch {
       // Skip failed route calculations
@@ -128,7 +160,10 @@ export async function calculateMultiModalRoutes(
     }
   }
 
-  return routes.sort((a, b) => a.total_time_seconds - b.total_time_seconds).slice(0, TOP_N);
+  return routes
+    .sort((a, b) => a._scoring_time - b._scoring_time)
+    .slice(0, TOP_N)
+    .map(({ _scoring_time: _, ...route }) => route);
 }
 
 /** Calculate a direct walking route for comparison */

@@ -4,9 +4,12 @@ import ConfidenceBadge from '../shared/ConfidenceBadge.tsx';
 import {
   calculatePickupConfidence,
   calculateDropoffConfidence,
+  calculatePredictiveConfidence,
   routeConfidence,
 } from '../../services/confidenceScore.ts';
-import type { ConfidenceScore } from '../../services/confidenceScore.ts';
+import type { PredictiveConfidenceScore, StationPrediction } from '../../services/confidenceScore.ts';
+import type { BikeType } from '../../services/bikeTypeFilter.ts';
+import { BIKE_TYPE_SPEED_FACTOR, getBikeTypeLabel } from '../../services/routeEngine.ts';
 
 interface RoutePanelProps {
   routes: MultiModalRoute[];
@@ -16,6 +19,8 @@ interface RoutePanelProps {
   error: string | null;
   selectedIndex: number;
   onSelectRoute: (index: number) => void;
+  predictions?: Map<string, StationPrediction>;
+  bikeType?: BikeType;
 }
 
 function formatTime(seconds: number): string {
@@ -36,17 +41,21 @@ function RouteCard({
   index,
   isSelected,
   onSelect,
+  bikeType,
 }: {
   route: MultiModalRoute;
   walkingRoute: WalkingRoute | null;
-  confidence: ConfidenceScore | null;
+  confidence: PredictiveConfidenceScore | null;
   index: number;
   isSelected: boolean;
   onSelect: () => void;
+  bikeType?: BikeType;
 }) {
   const bikeMinutes = Math.round(route.total_time_seconds / 60);
   const walkMinutes = walkingRoute ? Math.round(walkingRoute.total_time_seconds / 60) : null;
   const timeSaved = walkMinutes ? walkMinutes - bikeMinutes : null;
+  const speedFactor = bikeType ? BIKE_TYPE_SPEED_FACTOR[bikeType] ?? 1 : 1;
+  const bikeLabel = bikeType ? getBikeTypeLabel(bikeType) : null;
 
   return (
     <button
@@ -75,6 +84,12 @@ function RouteCard({
         <div>Dejar: {route.dropoff_station.name}</div>
       </div>
 
+      {bikeLabel && speedFactor < 1 && (
+        <div className="mt-1 text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded inline-block">
+          {bikeLabel}
+        </div>
+      )}
+
       <RouteStats route={route} />
 
       {timeSaved !== null && (
@@ -95,15 +110,24 @@ function RouteCard({
 function getRouteConfidence(
   route: MultiModalRoute,
   stations: StationData[],
-): ConfidenceScore | null {
+  predictions?: Map<string, StationPrediction>,
+): PredictiveConfidenceScore | null {
   const pickup = stations.find((s) => s.station_id === route.pickup_station.station_id);
   const dropoff = stations.find((s) => s.station_id === route.dropoff_station.station_id);
   if (!pickup || !dropoff) return null;
   const walkToPickupMin = route.walk_to_pickup.duration_seconds / 60;
   const bikeToDropoffMin = route.bike_segment.duration_seconds / 60;
-  const pickupConf = calculatePickupConfidence(pickup, walkToPickupMin);
+
+  const prediction = predictions?.get(pickup.station_id);
+  const pickupConf = calculatePredictiveConfidence(pickup, walkToPickupMin, prediction);
   const dropoffConf = calculateDropoffConfidence(dropoff, bikeToDropoffMin);
-  return routeConfidence(pickupConf, dropoffConf);
+  const combined = routeConfidence(pickupConf, dropoffConf);
+
+  return {
+    ...combined,
+    predictedLevel: pickupConf.predictedLevel,
+    predictedReason: pickupConf.predictedReason,
+  };
 }
 
 const LEVEL_PRIORITY: Record<string, number> = { high: 0, medium: 1, low: 2 };
@@ -116,10 +140,12 @@ export default function RoutePanel({
   error,
   selectedIndex,
   onSelectRoute,
+  predictions,
+  bikeType,
 }: RoutePanelProps) {
   const routesWithConfidence = routes.map((route) => ({
     route,
-    confidence: getRouteConfidence(route, stations),
+    confidence: getRouteConfidence(route, stations, predictions),
   }));
 
   routesWithConfidence.sort((a, b) => {
@@ -161,6 +187,7 @@ export default function RoutePanel({
           index={i}
           isSelected={i === selectedIndex}
           onSelect={() => onSelectRoute(i)}
+          bikeType={bikeType}
         />
       ))}
 
