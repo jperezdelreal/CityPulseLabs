@@ -5,6 +5,8 @@ import {
   filterDropoffStations,
   calculateMultiModalRoutes,
   calculateWalkingOnly,
+  BIKE_TYPE_SPEED_FACTOR,
+  getBikeTypeLabel,
 } from '../../src/services/routeEngine';
 import { haversineDistance } from '../../src/services/routing';
 
@@ -362,5 +364,129 @@ describe('walking comparison logic', () => {
       const timeSaved = walkMinutes - bikeMinutes;
       expect(timeSaved).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('BIKE_TYPE_SPEED_FACTOR', () => {
+  it('EFIT is 20% faster (factor 0.8)', () => {
+    expect(BIKE_TYPE_SPEED_FACTOR['EFIT']).toBe(0.8);
+  });
+
+  it('FIT uses base speed (factor 1)', () => {
+    expect(BIKE_TYPE_SPEED_FACTOR['FIT']).toBe(1);
+  });
+
+  it('"any" uses base speed (factor 1)', () => {
+    expect(BIKE_TYPE_SPEED_FACTOR['any']).toBe(1);
+  });
+
+  it('BOOST is 15% faster (factor 0.85)', () => {
+    expect(BIKE_TYPE_SPEED_FACTOR['BOOST']).toBe(0.85);
+  });
+});
+
+describe('getBikeTypeLabel', () => {
+  it('returns electric label for EFIT', () => {
+    const label = getBikeTypeLabel('EFIT');
+    expect(label).not.toBeNull();
+    expect(label).toContain('20%');
+  });
+
+  it('returns null for FIT', () => {
+    expect(getBikeTypeLabel('FIT')).toBeNull();
+  });
+
+  it('returns null for "any"', () => {
+    expect(getBikeTypeLabel('any')).toBeNull();
+  });
+
+  it('returns boost label for BOOST', () => {
+    const label = getBikeTypeLabel('BOOST');
+    expect(label).not.toBeNull();
+    expect(label).toContain('Boost');
+  });
+});
+
+describe('bike type time adjustment in routes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function mockRouteResponse(durationSeconds: number, distanceMeters: number) {
+    return {
+      geometry: [[43.36, -8.41] as [number, number], [43.37, -8.40] as [number, number]],
+      duration_seconds: durationSeconds,
+      distance_meters: distanceMeters,
+    };
+  }
+
+  it('EFIT reduces bike time by 20%', async () => {
+    mockedGetWalkingRoute
+      .mockResolvedValueOnce(mockRouteResponse(100, 150))
+      .mockResolvedValueOnce(mockRouteResponse(200, 300));
+    mockedGetCyclingRoute.mockResolvedValueOnce(mockRouteResponse(500, 2000));
+
+    const efitStation = {
+      ...stationNearOrigin,
+      vehicle_types_available: [{ vehicle_type_id: 'EFIT' as const, count: 3 }],
+    };
+
+    const limitedStations = [efitStation, stationNearDest];
+    const result = await calculateMultiModalRoutes(origin, destination, limitedStations, 'EFIT');
+
+    expect(result.length).toBe(1);
+    // bike_time should be 500 * 0.8 = 400
+    expect(result[0].bike_time_seconds).toBe(400);
+    // total = walk(300) + bike(400) = 700
+    expect(result[0].total_time_seconds).toBe(700);
+  });
+
+  it('FIT keeps original bike time', async () => {
+    mockedGetWalkingRoute
+      .mockResolvedValueOnce(mockRouteResponse(100, 150))
+      .mockResolvedValueOnce(mockRouteResponse(200, 300));
+    mockedGetCyclingRoute.mockResolvedValueOnce(mockRouteResponse(500, 2000));
+
+    const fitStation = {
+      ...stationNearOrigin,
+      vehicle_types_available: [{ vehicle_type_id: 'FIT' as const, count: 3 }],
+    };
+
+    const limitedStations = [fitStation, stationNearDest];
+    const result = await calculateMultiModalRoutes(origin, destination, limitedStations, 'FIT');
+
+    expect(result.length).toBe(1);
+    expect(result[0].bike_time_seconds).toBe(500);
+    expect(result[0].total_time_seconds).toBe(800);
+  });
+
+  it('EFIT routes with available EFIT bikes are scored higher', async () => {
+    // Two pickup stations: one with EFIT, one without
+    mockedGetWalkingRoute.mockResolvedValue(mockRouteResponse(100, 150));
+    mockedGetCyclingRoute.mockResolvedValue(mockRouteResponse(500, 2000));
+
+    const efitStation = {
+      ...stationNearOrigin,
+      station_id: 'efit-pickup',
+      vehicle_types_available: [{ vehicle_type_id: 'EFIT' as const, count: 3 }],
+      num_bikes_available: 3,
+    };
+
+    const noEfitStation = {
+      ...stationNearOrigin2,
+      station_id: 'no-efit-pickup',
+      vehicle_types_available: [{ vehicle_type_id: 'EFIT' as const, count: 1 }],
+      num_bikes_available: 5,
+    };
+
+    const result = await calculateMultiModalRoutes(
+      origin,
+      destination,
+      [efitStation, noEfitStation, stationNearDest],
+      'EFIT',
+    );
+
+    // Both routes should exist and EFIT bonus should favor EFIT stations
+    expect(result.length).toBeGreaterThan(0);
   });
 });

@@ -1,4 +1,4 @@
-﻿import type { StationData } from '../types/gbfs.ts';
+import type { StationData } from '../types/gbfs.ts';
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
@@ -6,6 +6,18 @@ export interface ConfidenceScore {
   level: ConfidenceLevel;
   score: number;
   reason: string;
+}
+
+export interface PredictiveConfidenceScore extends ConfidenceScore {
+  predictedLevel?: ConfidenceLevel;
+  predictedReason?: string;
+}
+
+/** Prediction data for a station at a future point in time */
+export interface StationPrediction {
+  predicted_bikes_available: number;
+  predicted_docks_available: number;
+  minutes_ahead: number;
 }
 
 const LEVEL_ORDER: ConfidenceLevel[] = ['high', 'medium', 'low'];
@@ -119,4 +131,57 @@ function buildDropoffReason(docks: number, walkMin: number, level: ConfidenceLev
   return walkMin > 5
     ? 'Solo ' + docks + ' huecos disponibles y estas a ' + Math.round(walkMin) + ' min'
     : 'Solo ' + docks + ' huecos disponibles';
+}
+
+/**
+ * Calculate predictive pickup confidence by blending current availability
+ * with predicted future availability. Falls back to basic heuristic when
+ * no prediction data is provided.
+ */
+export function calculatePredictiveConfidence(
+  station: StationData,
+  walkTimeMinutes: number,
+  prediction?: StationPrediction,
+): PredictiveConfidenceScore {
+  const current = calculatePickupConfidence(station, walkTimeMinutes);
+
+  if (!prediction) {
+    return current;
+  }
+
+  const capacity = station.capacity;
+  if (capacity === 0) {
+    return current;
+  }
+
+  const predictedRatio = prediction.predicted_bikes_available / capacity;
+  let predictedLevel: ConfidenceLevel;
+  if (predictedRatio > 0.5) {
+    predictedLevel = 'high';
+  } else if (predictedRatio >= 0.25) {
+    predictedLevel = 'medium';
+  } else {
+    predictedLevel = 'low';
+  }
+
+  const currentIdx = LEVEL_ORDER.indexOf(current.level);
+  const predictedIdx = LEVEL_ORDER.indexOf(predictedLevel);
+
+  if (predictedIdx > currentIdx) {
+    const predictedScore = Math.round(predictedRatio * 100);
+    const blendedScore = Math.round((current.score + predictedScore) / 2);
+    const predictedReason =
+      'Ahora hay ' + station.num_bikes_available + ' bicis, pero a esta hora suelen bajar a ' +
+      prediction.predicted_bikes_available;
+
+    return {
+      level: predictedLevel,
+      score: clamp(blendedScore, 0, 100),
+      reason: current.reason,
+      predictedLevel,
+      predictedReason,
+    };
+  }
+
+  return current;
 }
