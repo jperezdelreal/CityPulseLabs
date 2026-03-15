@@ -2,6 +2,7 @@ import type { StationData } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { getAvailabilityLevel } from '../../utils/stationColors.ts';
 import { colors } from '../../styles/tokens.ts';
+import { getVehicleTypeIcon } from '../../utils/vehicleTypes.ts';
 
 interface StationPanelProps {
   station: StationData | null;
@@ -13,10 +14,10 @@ interface StationPanelProps {
 }
 
 const levelLabels: Record<string, string> = {
-  good: 'Good availability',
-  limited: 'Limited availability',
-  empty: 'Few or no bikes',
-  offline: 'Station offline',
+  good: 'Buena disponibilidad',
+  limited: 'Disponibilidad limitada',
+  empty: 'Pocas o ninguna bici',
+  offline: 'Estación fuera de servicio',
 };
 
 function formatLastUpdated(date: Date | null): string {
@@ -39,7 +40,7 @@ export default function StationPanel({
     return (
       <div className="panel p-4" data-testid="station-panel-error">
         <div className="alert alert-error">
-          <p className="font-medium">Failed to load stations</p>
+          <p className="font-medium">Error al cargar estaciones</p>
           <p className="text-sm mt-1">{error}</p>
         </div>
       </div>
@@ -62,7 +63,7 @@ export default function StationPanel({
   if (!station) {
     return (
       <div className="panel p-4 text-center" data-testid="station-panel-empty">
-        <p className="text-gray-500 text-sm">Click a station marker to see details</p>
+        <p className="text-gray-500 text-sm">Selecciona una estación en el mapa</p>
       </div>
     );
   }
@@ -79,7 +80,7 @@ export default function StationPanel({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-            aria-label="Close panel"
+            aria-label="Cerrar panel"
           >
             ×
           </button>
@@ -98,14 +99,14 @@ export default function StationPanel({
 
         {/* Bikes & Docks */}
         <div className="station-card-stat">
-          <span className="station-card-stat-label">Bikes available</span>
+          <span className="station-card-stat-label">🚲 Bicis disponibles</span>
           <span className="station-card-stat-value">
             {station.num_bikes_available}/{station.capacity}
           </span>
         </div>
 
         <div className="station-card-stat">
-          <span className="station-card-stat-label">Docks available</span>
+          <span className="station-card-stat-label">🅿️ Anclajes libres</span>
           <span className="station-card-stat-value">
             {station.num_docks_available}/{station.capacity}
           </span>
@@ -128,19 +129,18 @@ export default function StationPanel({
             {station.vehicle_types_available.map((vt) => {
               const isPreferred =
                 preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;
-              const icons: Record<string, string> = { FIT: '🔧', EFIT: '⚡', BOOST: '🚀' };
-              const icon = icons[vt.vehicle_type_id] ?? '🚲';
+              const icon = getVehicleTypeIcon(vt.vehicle_type_id);
               return (
                 <div
                   key={vt.vehicle_type_id}
                   className={`flex flex-col items-center rounded-lg p-2 ${
                     isPreferred
-                      ? 'bg-blue-50 ring-2 ring-blue-500'
+                      ? 'bg-secondary-50 ring-2 ring-secondary-500'
                       : 'bg-gray-50'
                   }`}
                 >
                   <span className="text-base">{icon}</span>
-                  <span className={`font-semibold ${isPreferred ? 'text-blue-700' : 'text-gray-800'}`}>
+                  <span className={`font-semibold ${isPreferred ? 'text-secondary-700' : 'text-gray-800'}`}>
                     {vt.count}
                   </span>
                   <span className="text-gray-500">{vt.vehicle_type_id}</span>
@@ -152,13 +152,13 @@ export default function StationPanel({
 
         {/* Capacity */}
         <div className="station-card-stat">
-          <span className="station-card-stat-label">Total capacity</span>
+          <span className="station-card-stat-label">Capacidad total</span>
           <span className="station-card-stat-value">{station.capacity}</span>
         </div>
       </div>
 
       <div className="panel-footer text-xs text-gray-400">
-        Last updated: {formatLastUpdated(lastUpdated)}
+        Última actualización: {formatLastUpdated(lastUpdated)}
       </div>
     </div>
   );

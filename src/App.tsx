@@ -58,8 +58,6 @@ function App() {
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
             preferredBikeType={bikeType}
-            loading={loading}
-            error={error}
           />
         </main>
 

@@ -1,4 +1,4 @@
-﻿import { render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import type { StationData } from '../../src/types/index';
 import { getAvailabilityLevel, getMarkerColor } from '../../src/utils/stationColors';
@@ -20,6 +20,9 @@ vi.mock('react-leaflet', () => ({
   ),
   Popup: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="popup">{children}</div>
+  ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip">{children}</div>
   ),
 }));
 
@@ -128,8 +131,8 @@ describe('StationPopup', () => {
       capacity: 15,
     });
     render(<StationPopup station={station} />);
-    expect(screen.getByText('Bikes')).toBeInTheDocument();
-    expect(screen.getByText('Docks')).toBeInTheDocument();
+    expect(screen.getByText(/Bicis/)).toBeInTheDocument();
+    expect(screen.getByText(/Anclajes/)).toBeInTheDocument();
     expect(screen.getAllByTestId('confidence-badge').length).toBe(2);
   });
 
@@ -142,8 +145,8 @@ describe('StationPopup', () => {
     });
     render(<StationPopup station={station} />);
     // Each type renders as: icon + label (e.g. "🔧 FIT") and count separately
-    expect(screen.getByText('🔧 FIT')).toBeInTheDocument();
-    expect(screen.getByText('⚡ EFIT')).toBeInTheDocument();
+    expect(screen.getByText(/Mecánica/)).toBeInTheDocument();
+    expect(screen.getByText(/Eléctrica/)).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
   });

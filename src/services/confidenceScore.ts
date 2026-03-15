@@ -110,27 +110,27 @@ export function routeConfidence(
 }
 
 function buildPickupReason(bikes: number, walkMin: number, level: ConfidenceLevel): string {
-  if (level === 'high') return bikes + ' bicis disponibles';
+  if (level === 'high') return `${bikes} bicis disponibles`;
   if (level === 'medium') {
     return walkMin > 5
-      ? 'Solo ' + bikes + ' bicis y estas a ' + Math.round(walkMin) + ' min andando'
-      : bikes + ' bicis disponibles';
+      ? `Solo ${bikes} bicis y estas a ${Math.round(walkMin)} min andando`
+      : `${bikes} bicis disponibles`;
   }
   return walkMin > 5
-    ? 'Solo ' + bikes + ' bicis disponibles y estas a ' + Math.round(walkMin) + ' min andando'
-    : 'Solo ' + bikes + ' bicis disponibles';
+    ? `Solo ${bikes} bicis disponibles y estas a ${Math.round(walkMin)} min andando`
+    : `Solo ${bikes} bicis disponibles`;
 }
 
 function buildDropoffReason(docks: number, walkMin: number, level: ConfidenceLevel): string {
-  if (level === 'high') return docks + ' huecos disponibles';
+  if (level === 'high') return `${docks} huecos disponibles`;
   if (level === 'medium') {
     return walkMin > 5
-      ? 'Solo ' + docks + ' huecos y estas a ' + Math.round(walkMin) + ' min'
-      : docks + ' huecos disponibles';
+      ? `Solo ${docks} huecos y estas a ${Math.round(walkMin)} min`
+      : `${docks} huecos disponibles`;
   }
   return walkMin > 5
-    ? 'Solo ' + docks + ' huecos disponibles y estas a ' + Math.round(walkMin) + ' min'
-    : 'Solo ' + docks + ' huecos disponibles';
+    ? `Solo ${docks} huecos disponibles y estas a ${Math.round(walkMin)} min`
+    : `Solo ${docks} huecos disponibles`;
 }
 
 /**
@@ -171,8 +171,7 @@ export function calculatePredictiveConfidence(
     const predictedScore = Math.round(predictedRatio * 100);
     const blendedScore = Math.round((current.score + predictedScore) / 2);
     const predictedReason =
-      'Ahora hay ' + station.num_bikes_available + ' bicis, pero a esta hora suelen bajar a ' +
-      prediction.predicted_bikes_available;
+      `Ahora hay ${station.num_bikes_available} bicis, pero a esta hora suelen bajar a ${prediction.predicted_bikes_available}`;
 
     return {
       level: predictedLevel,

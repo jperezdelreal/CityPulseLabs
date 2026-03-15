@@ -54,9 +54,9 @@ export default function LocationPicker({
   onClear,
 }: LocationPickerProps) {
   const instructionText = !origin
-    ? 'Haz clic en el mapa para marcar el origen'
+    ? '📍 Toca el mapa para elegir tu origen'
     : !destination
-      ? 'Haz clic en el mapa para marcar el destino'
+      ? '📍 Toca de nuevo para elegir el destino'
       : null;
 
   return (
