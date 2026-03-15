@@ -1,4 +1,4 @@
-import type { Station, Route } from '../types';
+import type { StationData, Route } from '../types/index.ts';
 
 /** Calculate distance between two points using Haversine formula */
 export function haversineDistance(
@@ -19,7 +19,7 @@ export function haversineDistance(
 export function findRoutes(
   _origin: { lat: number; lng: number },
   _destination: { lat: number; lng: number },
-  _stations: Station[],
+  _stations: StationData[],
   _topN = 3,
 ): Route[] {
   // TODO: Implement multi-modal routing (walk → bike → walk)
