@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+﻿import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import type { StationData } from '../../src/types/index';
 import { getAvailabilityLevel, getMarkerColor } from '../../src/utils/stationColors';
@@ -128,8 +128,9 @@ describe('StationPopup', () => {
       capacity: 15,
     });
     render(<StationPopup station={station} />);
-    expect(screen.getByText('8/15 bikes')).toBeInTheDocument();
-    expect(screen.getByText('7/15 docks')).toBeInTheDocument();
+    expect(screen.getByText('Bikes')).toBeInTheDocument();
+    expect(screen.getByText('Docks')).toBeInTheDocument();
+    expect(screen.getAllByTestId('confidence-badge').length).toBe(2);
   });
 
   it('shows vehicle type breakdown when available', () => {

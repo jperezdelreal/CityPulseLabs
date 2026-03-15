@@ -1,6 +1,11 @@
-import { Popup } from 'react-leaflet';
+﻿import { Popup } from 'react-leaflet';
 import type { StationData } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
+import ConfidenceBadge from '../shared/ConfidenceBadge.tsx';
+import {
+  calculatePickupConfidence,
+  calculateDropoffConfidence,
+} from '../../services/confidenceScore.ts';
 
 interface StationPopupProps {
   station: StationData;
@@ -23,23 +28,28 @@ const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
 export default function StationPopup({ station, preferredBikeType = 'any' }: StationPopupProps) {
   const hasVehicleTypes = station.vehicle_types_available.length > 0;
 
+  const pickupConf = calculatePickupConfidence(station, 0);
+  const dropoffConf = calculateDropoffConfidence(station, 0);
+
   return (
     <Popup>
       <div className="min-w-[180px]" data-testid="station-popup">
         <h3 className="font-semibold text-sm mb-2 text-gray-900">{station.name}</h3>
 
         <div className="text-xs space-y-1">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-gray-600">Bikes</span>
-            <span className="font-medium">
-              {station.num_bikes_available}/{station.capacity} bikes
+            <span className="flex items-center gap-1 font-medium">
+              {station.num_bikes_available}/{station.capacity}
+              <ConfidenceBadge confidence={pickupConf} compact />
             </span>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-gray-600">Docks</span>
-            <span className="font-medium">
-              {station.num_docks_available}/{station.capacity} docks
+            <span className="flex items-center gap-1 font-medium">
+              {station.num_docks_available}/{station.capacity}
+              <ConfidenceBadge confidence={dropoffConf} compact />
             </span>
           </div>
 

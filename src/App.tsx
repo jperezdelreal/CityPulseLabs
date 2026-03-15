@@ -72,6 +72,7 @@ function App() {
           <RoutePanel
             routes={routes}
             walkingRoute={walkingRoute}
+            stations={stations}
             loading={routeLoading}
             error={routeError}
             selectedIndex={selectedRouteIndex}

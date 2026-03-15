@@ -1,9 +1,17 @@
-import type { MultiModalRoute, WalkingRoute } from '../../types/index.ts';
+import type { MultiModalRoute, WalkingRoute, StationData } from '../../types/index.ts';
 import RouteStats from './RouteStats.tsx';
+import ConfidenceBadge from '../shared/ConfidenceBadge.tsx';
+import {
+  calculatePickupConfidence,
+  calculateDropoffConfidence,
+  routeConfidence,
+} from '../../services/confidenceScore.ts';
+import type { ConfidenceScore } from '../../services/confidenceScore.ts';
 
 interface RoutePanelProps {
   routes: MultiModalRoute[];
   walkingRoute: WalkingRoute | null;
+  stations: StationData[];
   loading: boolean;
   error: string | null;
   selectedIndex: number;
@@ -24,12 +32,14 @@ function formatDistance(meters: number): string {
 function RouteCard({
   route,
   walkingRoute,
+  confidence,
   index,
   isSelected,
   onSelect,
 }: {
   route: MultiModalRoute;
   walkingRoute: WalkingRoute | null;
+  confidence: ConfidenceScore | null;
   index: number;
   isSelected: boolean;
   onSelect: () => void;
@@ -48,18 +58,21 @@ function RouteCard({
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-gray-500">Ruta {index + 1}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-500">Ruta {index + 1}</span>
+          {confidence && <ConfidenceBadge confidence={confidence} />}
+        </div>
         <span className="text-lg font-bold text-gray-900">{formatTime(route.total_time_seconds)}</span>
       </div>
 
       <div className="flex gap-3 text-xs text-gray-600 mb-2">
-        <span>🚶 {formatTime(route.walk_time_seconds)} ({formatDistance(route.walk_distance_meters)})</span>
-        <span>🚲 {formatTime(route.bike_time_seconds)} ({formatDistance(route.bike_distance_meters)})</span>
+        <span>{formatTime(route.walk_time_seconds)} ({formatDistance(route.walk_distance_meters)})</span>
+        <span>{formatTime(route.bike_time_seconds)} ({formatDistance(route.bike_distance_meters)})</span>
       </div>
 
       <div className="text-xs text-gray-500">
-        <div>📍 Recoger: {route.pickup_station.name}</div>
-        <div>🅿️ Dejar: {route.dropoff_station.name}</div>
+        <div>Recoger: {route.pickup_station.name}</div>
+        <div>Dejar: {route.dropoff_station.name}</div>
       </div>
 
       <RouteStats route={route} />
@@ -71,25 +84,54 @@ function RouteCard({
             : 'bg-amber-100 text-amber-700'
         }`}>
           {timeSaved > 0
-            ? `🚲 Bici: ${bikeMinutes} min | 🚶 Andando: ${walkMinutes} min | ⚡ Ahorras ${timeSaved} min`
-            : `🚶 Andando es más rápido (${walkMinutes} min vs ${bikeMinutes} min en bici)`}
+            ? `Bici: ${bikeMinutes} min | Andando: ${walkMinutes} min | Ahorras ${timeSaved} min`
+            : `Andando es mas rapido (${walkMinutes} min vs ${bikeMinutes} min en bici)`}
         </div>
       )}
     </button>
   );
 }
 
+function getRouteConfidence(
+  route: MultiModalRoute,
+  stations: StationData[],
+): ConfidenceScore | null {
+  const pickup = stations.find((s) => s.station_id === route.pickup_station.station_id);
+  const dropoff = stations.find((s) => s.station_id === route.dropoff_station.station_id);
+  if (!pickup || !dropoff) return null;
+  const walkToPickupMin = route.walk_to_pickup.duration_seconds / 60;
+  const bikeToDropoffMin = route.bike_segment.duration_seconds / 60;
+  const pickupConf = calculatePickupConfidence(pickup, walkToPickupMin);
+  const dropoffConf = calculateDropoffConfidence(dropoff, bikeToDropoffMin);
+  return routeConfidence(pickupConf, dropoffConf);
+}
+
+const LEVEL_PRIORITY: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
 export default function RoutePanel({
   routes,
   walkingRoute,
+  stations,
   loading,
   error,
   selectedIndex,
   onSelectRoute,
 }: RoutePanelProps) {
+  const routesWithConfidence = routes.map((route) => ({
+    route,
+    confidence: getRouteConfidence(route, stations),
+  }));
+
+  routesWithConfidence.sort((a, b) => {
+    const aPri = a.confidence ? LEVEL_PRIORITY[a.confidence.level] ?? 2 : 2;
+    const bPri = b.confidence ? LEVEL_PRIORITY[b.confidence.level] ?? 2 : 2;
+    if (aPri !== bPri) return aPri - bPri;
+    return a.route.total_time_seconds - b.route.total_time_seconds;
+  });
+
   return (
     <div className="p-4 space-y-3">
-      <h2 className="text-lg font-semibold">🗺️ Rutas</h2>
+      <h2 className="text-lg font-semibold">Rutas</h2>
 
       {loading && (
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -100,21 +142,22 @@ export default function RoutePanel({
 
       {error && (
         <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
-      {!loading && !error && routes.length === 0 && (
+      {!loading && !error && routesWithConfidence.length === 0 && (
         <p className="text-sm text-gray-500">
           Haz clic en el mapa para seleccionar origen y destino.
         </p>
       )}
 
-      {routes.map((route, i) => (
+      {routesWithConfidence.map(({ route, confidence }, i) => (
         <RouteCard
           key={`${route.pickup_station.station_id}-${route.dropoff_station.station_id}`}
           route={route}
           walkingRoute={walkingRoute}
+          confidence={confidence}
           index={i}
           isSelected={i === selectedIndex}
           onSelect={() => onSelectRoute(i)}
@@ -123,7 +166,7 @@ export default function RoutePanel({
 
       {walkingRoute && !loading && (
         <div className="text-xs text-gray-500 border-t pt-2 mt-2">
-          🚶 Ruta directa andando: {formatTime(walkingRoute.total_time_seconds)} ({formatDistance(walkingRoute.total_distance_meters)})
+          Ruta directa andando: {formatTime(walkingRoute.total_time_seconds)} ({formatDistance(walkingRoute.total_distance_meters)})
         </div>
       )}
     </div>
