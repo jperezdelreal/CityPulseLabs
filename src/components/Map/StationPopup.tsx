@@ -8,6 +8,7 @@ import {
   calculateDropoffConfidence,
 } from '../../services/confidenceScore.ts';
 import { usePrediction } from '../../hooks/usePrediction.ts';
+import { VEHICLE_TYPE_LABELS } from '../../utils/vehicleTypes.ts';
 
 interface StationPopupProps {
   station: StationData;
@@ -21,11 +22,6 @@ function formatLastReported(timestamp: number): string {
   return 'hace ' + Math.floor(seconds / 3600) + 'h';
 }
 
-const TYPE_LABELS: Record<string, { icon: string; label: string }> = {
-  FIT: { icon: '🔧', label: 'Mecánica' },
-  EFIT: { icon: '⚡', label: 'Eléctrica' },
-  BOOST: { icon: '🚀', label: 'Boost' },
-};
 
 export default function StationPopup({ station, preferredBikeType = 'any' }: StationPopupProps) {
   const hasVehicleTypes = station.vehicle_types_available.length > 0;
@@ -59,7 +55,7 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
           {hasVehicleTypes && (
             <div className="pt-1 border-t border-gray-200 space-y-0.5">
               {station.vehicle_types_available.map((vt) => {
-                const meta = TYPE_LABELS[vt.vehicle_type_id];
+                const meta = VEHICLE_TYPE_LABELS[vt.vehicle_type_id];
                 if (!meta) return null;
                 const isPreferred =
                   preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;

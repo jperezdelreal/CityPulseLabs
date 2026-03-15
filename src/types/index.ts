@@ -54,11 +54,3 @@ export interface WalkingRoute {
   total_distance_meters: number;
 }
 
-/** @deprecated Use MultiModalRoute instead */
-export interface Route {
-  walkToStation: { station_id: string; name: string; lat: number; lon: number; capacity: number };
-  bikeToStation: { station_id: string; name: string; lat: number; lon: number; capacity: number };
-  walkToDest: number;
-  totalDistance: number;
-  totalTime: number;
-}

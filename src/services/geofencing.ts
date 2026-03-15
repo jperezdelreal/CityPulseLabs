@@ -18,8 +18,9 @@ export async function discoverGeofencingUrl(
   if (!res.ok) throw new Error(`GBFS discovery failed: ${res.status}`);
   const json: GBFSResponse<GBFSDiscoveryData> = await res.json();
 
+  const firstLang = Object.keys(json.data)[0];
   const feeds =
-    json.data[language]?.feeds ?? json.data[Object.keys(json.data)[0]!]?.feeds;
+    json.data[language]?.feeds ?? (firstLang ? json.data[firstLang]?.feeds : undefined);
   if (!feeds) return null;
 
   const geofencingFeed = feeds.find(

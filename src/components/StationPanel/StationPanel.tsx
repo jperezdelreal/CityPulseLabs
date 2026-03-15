@@ -2,6 +2,7 @@ import type { StationData } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { getAvailabilityLevel } from '../../utils/stationColors.ts';
 import { colors } from '../../styles/tokens.ts';
+import { getVehicleTypeIcon } from '../../utils/vehicleTypes.ts';
 
 interface StationPanelProps {
   station: StationData | null;
@@ -128,8 +129,7 @@ export default function StationPanel({
             {station.vehicle_types_available.map((vt) => {
               const isPreferred =
                 preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;
-              const icons: Record<string, string> = { FIT: '🔧', EFIT: '⚡', BOOST: '🚀' };
-              const icon = icons[vt.vehicle_type_id] ?? '🚲';
+              const icon = getVehicleTypeIcon(vt.vehicle_type_id);
               return (
                 <div
                   key={vt.vehicle_type_id}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RAIN_THRESHOLD } from '../../services/weather.ts';
 
 interface RainWarningProps {
   precipitationProbability: number;
@@ -11,7 +12,7 @@ export default function RainWarning({
 }: RainWarningProps) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || precipitationProbability <= 60) return null;
+  if (dismissed || precipitationProbability <= RAIN_THRESHOLD) return null;
 
   const timeText =
     minutesUntilRain !== null && minutesUntilRain > 0

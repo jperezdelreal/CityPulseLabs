@@ -2,7 +2,6 @@ import type { MultiModalRoute, WalkingRoute, StationData } from '../../types/ind
 import RouteStats from './RouteStats.tsx';
 import ConfidenceBadge from '../shared/ConfidenceBadge.tsx';
 import {
-  calculatePickupConfidence,
   calculateDropoffConfidence,
   calculatePredictiveConfidence,
   routeConfidence,
@@ -10,6 +9,7 @@ import {
 import type { PredictiveConfidenceScore, StationPrediction } from '../../services/confidenceScore.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { BIKE_TYPE_SPEED_FACTOR, getBikeTypeLabel } from '../../services/routeEngine.ts';
+import { formatDuration, formatDistance } from '../../services/routeStats.ts';
 
 interface RoutePanelProps {
   routes: MultiModalRoute[];
@@ -21,17 +21,6 @@ interface RoutePanelProps {
   onSelectRoute: (index: number) => void;
   predictions?: Map<string, StationPrediction>;
   bikeType?: BikeType;
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.round(seconds / 60);
-  if (mins < 1) return '< 1 min';
-  return `${mins} min`;
-}
-
-function formatDistance(meters: number): string {
-  if (meters < 1000) return `${Math.round(meters)} m`;
-  return `${(meters / 1000).toFixed(1)} km`;
 }
 
 function RouteCard({
@@ -71,12 +60,12 @@ function RouteCard({
           <span className="text-xs font-medium text-gray-500">Ruta {index + 1}</span>
           {confidence && <ConfidenceBadge confidence={confidence} />}
         </div>
-        <span className="text-lg font-bold text-gray-900">{formatTime(route.total_time_seconds)}</span>
+        <span className="text-lg font-bold text-gray-900">{formatDuration(route.total_time_seconds)}</span>
       </div>
 
       <div className="flex gap-3 text-xs text-gray-600 mb-2">
-        <span>{formatTime(route.walk_time_seconds)} ({formatDistance(route.walk_distance_meters)})</span>
-        <span>{formatTime(route.bike_time_seconds)} ({formatDistance(route.bike_distance_meters)})</span>
+        <span>{formatDuration(route.walk_time_seconds)} ({formatDistance(route.walk_distance_meters)})</span>
+        <span>{formatDuration(route.bike_time_seconds)} ({formatDistance(route.bike_distance_meters)})</span>
       </div>
 
       <div className="text-xs text-gray-500">
@@ -193,7 +182,7 @@ export default function RoutePanel({
 
       {walkingRoute && !loading && (
         <div className="text-xs text-gray-500 border-t pt-2 mt-2">
-          Ruta directa andando: {formatTime(walkingRoute.total_time_seconds)} ({formatDistance(walkingRoute.total_distance_meters)})
+          Ruta directa andando: {formatDuration(walkingRoute.total_time_seconds)} ({formatDistance(walkingRoute.total_distance_meters)})
         </div>
       )}
     </div>

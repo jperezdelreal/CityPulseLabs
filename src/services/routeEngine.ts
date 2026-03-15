@@ -163,6 +163,7 @@ export async function calculateMultiModalRoutes(
   return routes
     .sort((a, b) => a._scoring_time - b._scoring_time)
     .slice(0, TOP_N)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .map(({ _scoring_time: _, ...route }) => route);
 }
 

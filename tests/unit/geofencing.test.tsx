@@ -253,12 +253,12 @@ describe('GeofencingOverlay', () => {
 
   it('shows "no zones available" when collection is empty', () => {
     render(<GeofencingOverlay zones={emptyCollection} loading={false} />);
-    expect(screen.getByText(/no geofencing zones available/i)).toBeInTheDocument();
+    expect(screen.getByText(/no hay zonas de geofencing disponibles/i)).toBeInTheDocument();
   });
 
   it('shows "no zones available" when zones is null', () => {
     render(<GeofencingOverlay zones={null} loading={false} />);
-    expect(screen.getByText(/no geofencing zones available/i)).toBeInTheDocument();
+    expect(screen.getByText(/no hay zonas de geofencing disponibles/i)).toBeInTheDocument();
   });
 
   it('renders nothing when loading', () => {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import type { Layer, PathOptions } from 'leaflet';
-import type { GeofencingZonesCollection } from '../../types/index.ts';
+import type { GeofencingZonesCollection, GeofencingZoneFeature } from '../../types/index.ts';
 import {
   parseGeofencingFeatures,
   classifyZone,
@@ -49,11 +49,11 @@ export default function GeofencingOverlay({
           data={zones!}
           style={(feature) => {
             if (!feature) return {};
-            const classification = classifyZone(feature as any);
+            const classification = classifyZone(feature as unknown as GeofencingZoneFeature);
             return getZoneStyle(classification) as PathOptions;
           }}
           onEachFeature={(feature, layer: Layer) => {
-            const tooltip = getZoneTooltip(feature as any);
+            const tooltip = getZoneTooltip(feature as unknown as GeofencingZoneFeature);
             layer.bindTooltip(tooltip, {
               sticky: true,
               direction: 'top',
