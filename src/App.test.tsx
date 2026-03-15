@@ -15,6 +15,14 @@ vi.mock('react-leaflet', () => ({
   Popup: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="popup">{children}</div>
   ),
+  Marker: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="marker">{children}</div>
+  ),
+  Polyline: () => <div data-testid="polyline" />,
+  Tooltip: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip">{children}</div>
+  ),
+  useMapEvents: () => null,
 }));
 
 // Mock useStations hook
@@ -27,10 +35,20 @@ vi.mock('./hooks/useStations', () => ({
   }),
 }));
 
+// Mock useRoutes hook
+vi.mock('./hooks/useRoutes', () => ({
+  useRoutes: () => ({
+    routes: [],
+    walkingRoute: null,
+    loading: false,
+    error: null,
+  }),
+}));
+
 describe('App', () => {
-  it('renders the BiciCoruña header', () => {
+  it('renders the BiciCoru\u00F1a header', () => {
     render(<App />);
-    expect(screen.getByText(/BiciCoruña/)).toBeInTheDocument();
+    expect(screen.getByText(/BiciCoru\u00F1a/)).toBeInTheDocument();
   });
 
   it('renders the map container', () => {
