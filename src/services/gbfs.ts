@@ -6,6 +6,7 @@ import type {
   StationStatus,
   StationData,
 } from '../types/index.ts';
+import { fetchWithRetry } from '../utils/retry.ts';
 
 const GBFS_DISCOVERY_URL =
   'https://acoruna.publicbikesystem.net/customer/gbfs/v2/gbfs.json';
@@ -16,11 +17,12 @@ const DEFAULT_POLL_INTERVAL_MS = 30_000;
 export async function discoverFeedUrls(
   language = DEFAULT_LANGUAGE,
 ): Promise<{ stationInformationUrl: string; stationStatusUrl: string }> {
-  const res = await fetch(GBFS_DISCOVERY_URL);
+  const res = await fetchWithRetry(GBFS_DISCOVERY_URL);
   if (!res.ok) throw new Error(`GBFS discovery failed: ${res.status}`);
   const json: GBFSResponse<GBFSDiscoveryData> = await res.json();
 
-  const feeds = json.data[language]?.feeds ?? json.data[Object.keys(json.data)[0]!]?.feeds;
+  const firstLang = Object.keys(json.data)[0];
+  const feeds = json.data[language]?.feeds ?? (firstLang ? json.data[firstLang]?.feeds : undefined);
   if (!feeds) throw new Error('No feeds found in GBFS discovery response');
 
   const infoFeed = feeds.find((f: GBFSFeed) => f.name === 'station_information');
@@ -39,7 +41,7 @@ export async function discoverFeedUrls(
 export async function fetchStationInformation(
   url: string,
 ): Promise<StationInformation[]> {
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) throw new Error(`station_information fetch failed: ${res.status}`);
   const json: GBFSResponse<{ stations: StationInformation[] }> = await res.json();
   return json.data.stations;
@@ -49,7 +51,7 @@ export async function fetchStationInformation(
 export async function fetchStationStatus(
   url: string,
 ): Promise<StationStatus[]> {
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) throw new Error(`station_status fetch failed: ${res.status}`);
   const json: GBFSResponse<{ stations: StationStatus[] }> = await res.json();
   return json.data.stations;
@@ -100,17 +102,20 @@ export async function fetchAllStations(): Promise<StationData[]> {
 
 type StationListener = (stations: StationData[]) => void;
 
+type ErrorListener = (error: unknown, consecutiveFailures: number) => void;
+
 export class GBFSPoller {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private cachedInfo: StationInformation[] = [];
   private feedUrls: { stationInformationUrl: string; stationStatusUrl: string } | null = null;
   private pollIntervalMs: number;
+  private consecutiveFailures = 0;
 
   constructor(pollIntervalMs = DEFAULT_POLL_INTERVAL_MS) {
     this.pollIntervalMs = pollIntervalMs;
   }
 
-  async start(listener: StationListener): Promise<void> {
+  async start(listener: StationListener, onError?: ErrorListener): Promise<void> {
     this.feedUrls = await discoverFeedUrls();
 
     // Initial full fetch (info + status)
@@ -123,8 +128,10 @@ export class GBFSPoller {
       try {
         const freshStatus = await fetchStationStatus(this.feedUrls!.stationStatusUrl);
         listener(filterOperational(mergeStationData(this.cachedInfo, freshStatus)));
-      } catch {
-        // Silently skip failed poll; UI keeps previous data
+        this.consecutiveFailures = 0;
+      } catch (error: unknown) {
+        this.consecutiveFailures++;
+        onError?.(error, this.consecutiveFailures);
       }
     }, this.pollIntervalMs);
   }

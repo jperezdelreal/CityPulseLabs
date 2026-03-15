@@ -2,11 +2,14 @@ import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { StationData, LatLng, MultiModalRoute } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
+import type { NearestStationResult } from '../../utils/nearestStation.ts';
 import StationMarkers from './StationMarkers.tsx';
 import LiveIndicator from './LiveIndicator.tsx';
 import LocationPicker from './LocationPicker.tsx';
 import RouteDisplay from './RouteDisplay.tsx';
 import GeofencingOverlay from './GeofencingOverlay.tsx';
+import UserLocationMarker from './UserLocationMarker.tsx';
+import GeolocationButton from './GeolocationButton.tsx';
 import { useGeofencing } from '../../hooks/useGeofencing.ts';
 
 const A_CORUNA_CENTER = { lat: 43.3623, lng: -8.4115 };
@@ -24,6 +27,14 @@ interface MapViewProps {
   onSetDestination: (point: LatLng) => void;
   onClearRoute: () => void;
   preferredBikeType?: BikeType;
+  geoPosition?: LatLng | null;
+  geoAccuracy?: number | null;
+  geoLoading?: boolean;
+  geoError?: string | null;
+  geoSupported?: boolean;
+  geoPermissionDenied?: boolean;
+  nearestStation?: NearestStationResult | null;
+  onRequestPosition?: () => void;
 }
 
 export default function MapView({
@@ -38,6 +49,14 @@ export default function MapView({
   onSetDestination,
   onClearRoute,
   preferredBikeType = 'any',
+  geoPosition = null,
+  geoAccuracy = null,
+  geoLoading = false,
+  geoError = null,
+  geoSupported = false,
+  geoPermissionDenied = false,
+  nearestStation = null,
+  onRequestPosition = () => {},
 }: MapViewProps) {
   const { zones, loading: zonesLoading } = useGeofencing();
 
@@ -70,6 +89,19 @@ export default function MapView({
           onClear={onClearRoute}
         />
         <RouteDisplay route={selectedRoute} />
+        {geoPosition && (
+          <UserLocationMarker position={geoPosition} accuracy={geoAccuracy} />
+        )}
+        <GeolocationButton
+          position={geoPosition}
+          loading={geoLoading}
+          error={geoError}
+          supported={geoSupported}
+          permissionDenied={geoPermissionDenied}
+          nearestStation={nearestStation}
+          onRequestPosition={onRequestPosition}
+          onSetOrigin={onSetOrigin}
+        />
       </MapContainer>
     </div>
   );

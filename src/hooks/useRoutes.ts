@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { LatLng, MultiModalRoute, WalkingRoute } from '../types/index.ts';
 import type { StationData } from '../types/gbfs.ts';
 import type { BikeType } from '../services/bikeTypeFilter.ts';
@@ -17,22 +17,20 @@ export function useRoutes(
   stations: StationData[],
   bikeType: BikeType = 'any',
 ): UseRoutesResult {
-  const [routes, setRoutes] = useState<MultiModalRoute[]>([]);
-  const [walkingRoute, setWalkingRoute] = useState<WalkingRoute | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    routes: MultiModalRoute[];
+    walkingRoute: WalkingRoute | null;
+    loading: boolean;
+    error: string | null;
+  }>({ routes: [], walkingRoute: null, loading: false, error: null });
+
+  const hasEndpoints = origin !== null && destination !== null;
 
   useEffect(() => {
-    if (!origin || !destination) {
-      setRoutes([]);
-      setWalkingRoute(null);
-      setError(null);
-      return;
-    }
+    if (!origin || !destination) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    setResult((prev) => ({ ...prev, loading: true, error: null }));
 
     async function fetchRoutes() {
       try {
@@ -42,14 +40,15 @@ export function useRoutes(
         ]);
 
         if (!cancelled) {
-          setRoutes(multiModal);
-          setWalkingRoute(walking);
-          setLoading(false);
+          setResult({ routes: multiModal, walkingRoute: walking, loading: false, error: null });
         }
       } catch (err: unknown) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to calculate routes');
-          setLoading(false);
+          setResult((prev) => ({
+            ...prev,
+            error: err instanceof Error ? err.message : 'Failed to calculate routes',
+            loading: false,
+          }));
         }
       }
     }
@@ -61,5 +60,10 @@ export function useRoutes(
     };
   }, [origin, destination, stations, bikeType]);
 
-  return { routes, walkingRoute, loading, error };
+  return useMemo(() => {
+    if (!hasEndpoints) {
+      return { routes: [], walkingRoute: null, loading: false, error: null };
+    }
+    return result;
+  }, [hasEndpoints, result]);
 }

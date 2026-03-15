@@ -9,6 +9,7 @@ export function useStations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [staleWarning, setStaleWarning] = useState(false);
   const pollerRef = useRef<GBFSPoller | null>(null);
 
   const handleUpdate = useCallback((data: StationData[]) => {
@@ -16,13 +17,20 @@ export function useStations() {
     setLastUpdated(new Date());
     setLoading(false);
     setError(null);
+    setStaleWarning(false);
+  }, []);
+
+  const handlePollError = useCallback((_error: unknown, consecutiveFailures: number) => {
+    if (consecutiveFailures >= 3) {
+      setStaleWarning(true);
+    }
   }, []);
 
   useEffect(() => {
     const poller = new GBFSPoller(POLL_INTERVAL_MS);
     pollerRef.current = poller;
 
-    poller.start(handleUpdate).catch((err: unknown) => {
+    poller.start(handleUpdate, handlePollError).catch((err: unknown) => {
       setError(err instanceof Error ? err.message : 'Failed to fetch stations');
       setLoading(false);
     });
@@ -30,7 +38,7 @@ export function useStations() {
     return () => {
       poller.stop();
     };
-  }, [handleUpdate]);
+  }, [handleUpdate, handlePollError]);
 
-  return { stations, loading, error, lastUpdated };
+  return { stations, loading, error, lastUpdated, staleWarning };
 }

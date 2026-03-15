@@ -1,4 +1,5 @@
 import type { LatLng, RouteSegment } from '../types/index.ts';
+import { fetchWithRetry } from '../utils/retry.ts';
 
 const ORS_BASE_URL = 'https://api.openrouteservice.org/v2/directions';
 
@@ -43,7 +44,7 @@ async function fetchRoute(
   }
 
   const url = `${ORS_BASE_URL}/${profile}?start=${start}&end=${end}`;
-  const response = await fetch(url, { headers });
+  const response = await fetchWithRetry(url, { headers });
 
   if (!response.ok) {
     throw new Error(`ORS API error: ${response.status} ${response.statusText}`);

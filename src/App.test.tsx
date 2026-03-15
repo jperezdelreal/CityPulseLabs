@@ -23,6 +23,8 @@ vi.mock('react-leaflet', () => ({
     <div data-testid="tooltip">{children}</div>
   ),
   useMapEvents: () => null,
+  useMap: () => ({ setView: () => {}, getZoom: () => 14 }),
+  GeoJSON: () => <div data-testid="geojson-layer" />,
 }));
 
 // Mock useStations hook
@@ -31,6 +33,7 @@ vi.mock('./hooks/useStations', () => ({
     stations: [],
     loading: false,
     error: null,
+    staleWarning: null,
     lastUpdated: null,
   }),
 }));
@@ -42,6 +45,19 @@ vi.mock('./hooks/useRoutes', () => ({
     walkingRoute: null,
     loading: false,
     error: null,
+  }),
+}));
+
+// Mock useGeolocation hook
+vi.mock('./hooks/useGeolocation', () => ({
+  useGeolocation: () => ({
+    position: null,
+    accuracy: null,
+    loading: false,
+    error: null,
+    supported: false,
+    permissionDenied: false,
+    requestPosition: () => {},
   }),
 }));
 
