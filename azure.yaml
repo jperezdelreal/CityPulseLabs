@@ -10,7 +10,7 @@ infra:
 
 services:
   web:
-    project: ./src/web
+    project: .
     dist: dist
     language: js
     host: staticwebapp
