@@ -17,9 +17,9 @@ interface StationPopupProps {
 
 function formatLastReported(timestamp: number): string {
   const seconds = Math.floor(Date.now() / 1000 - timestamp);
-  if (seconds < 60) return 'hace ' + seconds + 's';
-  if (seconds < 3600) return 'hace ' + Math.floor(seconds / 60) + ' min';
-  return 'hace ' + Math.floor(seconds / 3600) + 'h';
+  if (seconds < 60) return `hace ${seconds}s`;
+  if (seconds < 3600) return `hace ${Math.floor(seconds / 60)} min`;
+  return `hace ${Math.floor(seconds / 3600)}h`;
 }
 
 
