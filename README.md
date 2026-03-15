@@ -9,12 +9,30 @@
 
 ---
 
+## Project Status
+
+🟡 **v0.1 — In Development** (Wave 2 Complete)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Project scaffolding | ✅ Done | React 19 + Vite + TypeScript + Tailwind + Leaflet |
+| Azure infrastructure (IaC) | ✅ Done | Bicep templates for SWA + Functions + Cosmos DB |
+| GBFS data integration | ✅ Done | TypeScript service with types, hooks, proxy function |
+| Data collection pipeline | ✅ Done | Timer Trigger → Cosmos DB (not deployed) |
+| Interactive map | 🔄 In Progress | Live station markers, map interactions (Wave 3) |
+| Route calculator | 🔄 In Progress | Multi-modal routing (Walk→Bike→Walk) (Wave 3) |
+| CI/CD pipeline | ✅ Done | GitHub Actions for SWA deployment |
+| UI/UX design system | ✅ Done | Color tokens, responsive breakpoints, map styling |
+| Live deployment | ⏳ Pending | Ready for Azure deployment |
+
+---
+
 ## What It Does
 
 BiciCoruña helps you plan intermodal journeys combining multiple transportation modes:
 
 ```
-Example Flow:
+Example Flow (Under Development):
   Walk 100m → Bike Station A (check availability: 5 bikes)
   Ride 2.5km → Bike Station B (predicted availability: 87%)
   Walk 50m → Destination
@@ -23,26 +41,26 @@ Real-time data + AI predictions = confident route planning
 Rain warning: ☂️ 65% chance in 15 minutes
 ```
 
-### Key Features
+### Key Features (Roadmap)
 
-- **Live Station Data**: Real-time bike and dock availability across 55 BiciCoruña stations
-- **Demand Prediction**: AI forecasts station occupancy (confidence scores included)
-- **Weather Integration**: Rain and temperature alerts for better trip planning
-- **Intermodal Routes**: Seamless walking + biking combinations
-- **Responsive Web UI**: Works on desktop and mobile devices
+- **Live Station Data**: Real-time bike and dock availability across 55 BiciCoruña stations ✅
+- **Demand Prediction**: AI forecasts station occupancy (v0.2)
+- **Weather Integration**: Rain and temperature alerts for better trip planning (planned)
+- **Intermodal Routes**: Seamless walking + biking combinations (🔄 in progress)
+- **Responsive Web UI**: Works on desktop and mobile devices ✅
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | React 18, TypeScript, Tailwind CSS, Leaflet.js | Interactive map UI, route planning interface |
-| **Backend** | Azure Functions (Node.js), Express.js | REST API for stations, predictions, weather |
-| **Database** | Azure Cosmos DB (NoSQL) | Time-series data, demand predictions, cache |
-| **Data Ingestion** | Azure Functions (Timer trigger) | GBFS polling, data enrichment, preprocessing |
-| **Infrastructure** | Azure (App Service, Functions, Cosmos, CDN) | Scalable serverless deployment |
-| **Monitoring** | Application Insights | Performance tracking, error logging |
+| Layer | Technology | Purpose | Status |
+|-------|-----------|---------|--------|
+| **Frontend** | React 19, Vite, TypeScript, Tailwind CSS, Leaflet.js | Interactive map UI, route planning interface | ✅ Done |
+| **Backend** | Azure Functions (Node.js) | REST API for stations, predictions, weather | 🔄 In Progress |
+| **Database** | Azure Cosmos DB Serverless (NoSQL) | Time-series data, demand predictions, cache | ✅ IaC Done |
+| **Data Ingestion** | Azure Functions (Timer Trigger) | GBFS polling, data enrichment, preprocessing | ✅ Done |
+| **Infrastructure** | Azure (IaC via Bicep) | Serverless deployment templates | ✅ Done |
+| **CI/CD** | GitHub Actions | Automated SWA deployment | ✅ Done |
 
 ---
 
@@ -217,25 +235,29 @@ For detailed deployment options, see [docs/architecture.md](docs/architecture.md
 
 ## Project Roadmap
 
-### v0.1 — MVP (Current)
-- ✅ Live station availability via GBFS
-- ✅ Simple route planning (walking + biking)
-- ✅ Real-time weather integration
-- ✅ React UI with Leaflet map
-- ✅ Basic Azure deployment
+### v0.1 — MVP (Wave 2 Complete ✅)
+- ✅ Project scaffolding (React 19 + Vite + TS + Tailwind + Leaflet)
+- ✅ Azure IaC (Bicep templates for SWA, Functions, Cosmos DB Serverless)
+- ✅ GBFS integration service (TypeScript, hooks, proxy function, auto-polling)
+- ✅ Data collection pipeline (Timer Trigger → Cosmos DB)
+- ✅ CI/CD pipeline (GitHub Actions for SWA deployment)
+- ✅ UI/UX design system (colors, tokens, responsive breakpoints)
+- 🔄 Interactive map with live station markers (Wave 3 in progress)
+- 🔄 Multi-modal route calculator (Walk→Bike→Walk) (Wave 3 in progress)
 
-### v0.2 — Demand Prediction (In Progress)
-- 🚧 AI-powered station occupancy forecasting
-- 🚧 Confidence scores for predictions
-- 🚧 Historical demand analytics
-- 🚧 Demand heatmaps
+### v0.2 — Demand Prediction (Planned)
+- 📋 AI-powered station occupancy forecasting
+- 📋 Confidence scores for predictions
+- 📋 Bike type filtering (pedal vs e-bike)
+- 📋 Rain warnings and weather integration
+- 📋 Demand statistics and analytics
 
-### v0.3 — Smart Recommendations
+### v0.3 — Enhanced Intelligence (Planned)
+- 📋 Predictive confidence scoring
 - 📋 Personalized route suggestions
 - 📋 Seasonal demand patterns
-- 📋 Event-based predictions (concerts, sports, holidays)
-- 📋 Multi-day trip planning
-- 📋 Mobile app (iOS/Android)
+- 📋 Event-based predictions
+- 📋 Progressive Web App (PWA)
 
 ---
 
