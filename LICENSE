@@ -1,0 +1,41 @@
+MIT License
+
+Copyright (c) 2026 CityPulse Labs by Syntax Sorcery
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Data Attribution
+
+This project uses data from external sources with specific licenses:
+
+- **BiciCoruña GBFS Data**: Licensed under CC-BY-4.0
+  (https://creativecommons.org/licenses/by/4.0/)
+  Credit: BiciCoruña (https://www.bicoruna.gal/)
+
+- **OpenStreetMap Data**: Licensed under ODbL 1.0
+  (https://opendatacommons.org/licenses/odbl/)
+  Credit: © OpenStreetMap contributors (https://www.openstreetmap.org/copyright)
+
+- **openrouteservice Routing**: Licensed under AGPL v3
+  (https://www.gnu.org/licenses/agpl-3.0.html)
+  Credit: HeiGIT, OpenStreetMap contributors (https://openrouteservice.org/)
+
+See docs/data-sources.md for complete attribution details.
