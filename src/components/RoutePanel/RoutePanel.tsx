@@ -1,4 +1,5 @@
 import type { MultiModalRoute, WalkingRoute } from '../../types/index.ts';
+import RouteStats from './RouteStats.tsx';
 
 interface RoutePanelProps {
   routes: MultiModalRoute[];
@@ -60,6 +61,8 @@ function RouteCard({
         <div>📍 Recoger: {route.pickup_station.name}</div>
         <div>🅿️ Dejar: {route.dropoff_station.name}</div>
       </div>
+
+      <RouteStats route={route} />
 
       {timeSaved !== null && (
         <div className={`mt-2 text-xs font-medium px-2 py-1 rounded ${

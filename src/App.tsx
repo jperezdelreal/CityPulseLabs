@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import MapView from './components/Map/MapView.tsx';
 import StationPanel from './components/StationPanel/StationPanel.tsx';
 import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
+import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
 import { useStations } from './hooks/useStations.ts';
 import { useRoutes } from './hooks/useRoutes.ts';
+import { type BikeType, filterByBikeType } from './services/bikeTypeFilter.ts';
 import type { StationData, LatLng } from './types/index.ts';
 
 function App() {
@@ -12,8 +14,14 @@ function App() {
   const [origin, setOrigin] = useState<LatLng | null>(null);
   const [destination, setDestination] = useState<LatLng | null>(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [bikeType, setBikeType] = useState<BikeType>('any');
 
-  const { routes, walkingRoute, loading: routeLoading, error: routeError } = useRoutes(origin, destination, stations);
+  const filteredStations = useMemo(
+    () => filterByBikeType(stations, bikeType),
+    [stations, bikeType],
+  );
+
+  const { routes, walkingRoute, loading: routeLoading, error: routeError } = useRoutes(origin, destination, stations, bikeType);
 
   const handleClearRoute = useCallback(() => {
     setOrigin(null);
@@ -27,14 +35,17 @@ function App() {
     <div className="h-screen w-screen flex flex-col">
       <header className="bg-blue-700 text-white px-4 py-2 flex items-center gap-2 shrink-0">
         <span className="text-xl font-bold">🚲 BiciCoruña</span>
-        <span className="text-sm opacity-80">Smart bike-sharing route planner</span>
+        <span className="text-sm opacity-80 hidden sm:inline">Smart bike-sharing route planner</span>
+        <div className="ml-auto">
+          <BikeTypeSelector selectedType={bikeType} onTypeChange={setBikeType} />
+        </div>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
         {/* Map */}
         <main className="flex-1 relative">
           <MapView
-            stations={stations}
+            stations={filteredStations}
             selectedStationId={selectedStation?.station_id}
             onStationSelect={setSelectedStation}
             lastUpdated={lastUpdated}
@@ -44,6 +55,7 @@ function App() {
             onSetOrigin={setOrigin}
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
+            preferredBikeType={bikeType}
           />
         </main>
 
@@ -71,6 +83,7 @@ function App() {
             error={error}
             lastUpdated={lastUpdated}
             onClose={() => setSelectedStation(null)}
+            preferredBikeType={bikeType}
           />
         </aside>
       </div>
