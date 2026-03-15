@@ -1,10 +1,13 @@
+import { fetchWithRetry } from '../utils/retry.ts';
+
 export interface WeatherData {
   precipitationProbability: number;
   minutesUntilRain: number | null;
 }
 
 const WEATHER_API_URL = '/api/weather';
-const RAIN_THRESHOLD = 60;
+export const RAIN_THRESHOLD = 60;
+const FORECAST_SLOT_MINUTES = 15;
 
 /**
  * Fetch precipitation probability for A Coruña from the weather API proxy.
@@ -12,7 +15,7 @@ const RAIN_THRESHOLD = 60;
  * minutes until rain exceeds the threshold.
  */
 export async function fetchWeather(): Promise<WeatherData> {
-  const res = await fetch(WEATHER_API_URL);
+  const res = await fetchWithRetry(WEATHER_API_URL);
   if (!res.ok) {
     throw new Error(`Weather API error: ${res.status}`);
   }
@@ -30,7 +33,7 @@ export async function fetchWeather(): Promise<WeatherData> {
   let minutesUntilRain: number | null = null;
   for (let i = 0; i < probabilities.length; i++) {
     if (probabilities[i] >= RAIN_THRESHOLD) {
-      minutesUntilRain = i * 15;
+      minutesUntilRain = i * FORECAST_SLOT_MINUTES;
       break;
     }
   }
