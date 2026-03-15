@@ -25,10 +25,10 @@ export default function StationMarkers({
           <CircleMarker
             key={station.station_id}
             center={[station.lat, station.lon]}
-            radius={isSelected ? 10 : 7}
+            radius={isSelected ? 12 : 9}
             pathOptions={{
               fillColor: getMarkerColor(station),
-              color: isSelected ? '#1F2937' : '#FFFFFF',
+              color: isSelected ? '#0A7647' : '#FFFFFF',
               weight: isSelected ? 3 : 2,
               fillOpacity: 0.9,
             }}

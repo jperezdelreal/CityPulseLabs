@@ -32,10 +32,10 @@ export default function GeofencingOverlay({
           onClick={() => setVisible((v) => !v)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-md text-xs font-medium transition-colors ${
             visible
-              ? 'bg-green-600 text-white hover:bg-green-700'
+              ? 'bg-primary-600 text-white hover:bg-primary-700'
               : 'bg-white text-gray-600 hover:bg-gray-50'
           }`}
-          title="Toggle geofencing zones"
+          title="Mostrar/ocultar zonas"
         >
           <span className="text-sm">📍</span>
           Zones
@@ -66,7 +66,7 @@ export default function GeofencingOverlay({
       {/* No zones message */}
       {visible && !hasZones && !loading && (
         <div className="absolute bottom-36 left-3 z-[1000] bg-white/90 px-3 py-2 rounded-lg shadow-md text-xs text-gray-500 max-w-48">
-          No geofencing zones available for this system
+          No hay zonas de geofencing disponibles para este sistema
         </div>
       )}
     </>

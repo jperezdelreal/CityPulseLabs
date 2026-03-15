@@ -33,7 +33,7 @@ export default function BikeTypeSelector({ selectedType, onTypeChange }: BikeTyp
               transition-all cursor-pointer
               ${
                 isSelected
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-secondary-600 text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
               }
             `}

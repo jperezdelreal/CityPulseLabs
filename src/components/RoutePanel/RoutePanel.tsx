@@ -62,7 +62,7 @@ function RouteCard({
       onClick={onSelect}
       className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
         isSelected
-          ? 'border-blue-500 bg-blue-50'
+          ? 'border-secondary-500 bg-secondary-50'
           : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
     >
@@ -85,7 +85,7 @@ function RouteCard({
       </div>
 
       {bikeLabel && speedFactor < 1 && (
-        <div className="mt-1 text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded inline-block">
+        <div className="mt-1 text-xs font-medium text-secondary-700 bg-secondary-50 px-2 py-0.5 rounded inline-block">
           {bikeLabel}
         </div>
       )}
@@ -95,7 +95,7 @@ function RouteCard({
       {timeSaved !== null && (
         <div className={`mt-2 text-xs font-medium px-2 py-1 rounded ${
           timeSaved > 0
-            ? 'bg-green-100 text-green-700'
+            ? 'bg-primary-50 text-primary-700'
             : 'bg-amber-100 text-amber-700'
         }`}>
           {timeSaved > 0
