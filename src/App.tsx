@@ -1,12 +1,27 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import MapView from './components/Map/MapView.tsx';
 import StationPanel from './components/StationPanel/StationPanel.tsx';
+import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
 import { useStations } from './hooks/useStations.ts';
-import type { StationData } from './types/index.ts';
+import { useRoutes } from './hooks/useRoutes.ts';
+import type { StationData, LatLng } from './types/index.ts';
 
 function App() {
   const { stations, loading, error, lastUpdated } = useStations();
   const [selectedStation, setSelectedStation] = useState<StationData | null>(null);
+  const [origin, setOrigin] = useState<LatLng | null>(null);
+  const [destination, setDestination] = useState<LatLng | null>(null);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+
+  const { routes, walkingRoute, loading: routeLoading, error: routeError } = useRoutes(origin, destination, stations);
+
+  const handleClearRoute = useCallback(() => {
+    setOrigin(null);
+    setDestination(null);
+    setSelectedRouteIndex(0);
+  }, []);
+
+  const selectedRoute = routes[selectedRouteIndex] ?? null;
 
   return (
     <div className="h-screen w-screen flex flex-col">
@@ -23,19 +38,33 @@ function App() {
             selectedStationId={selectedStation?.station_id}
             onStationSelect={setSelectedStation}
             lastUpdated={lastUpdated}
+            origin={origin}
+            destination={destination}
+            selectedRoute={selectedRoute}
+            onSetOrigin={setOrigin}
+            onSetDestination={setDestination}
+            onClearRoute={handleClearRoute}
           />
         </main>
 
-        {/* Station panel — sidebar on desktop, bottom sheet on mobile */}
+        {/* Sidebar */}
         <aside
           className={`
-            ${selectedStation ? 'block' : 'hidden lg:block'}
+            ${selectedStation || origin || destination ? 'block' : 'hidden lg:block'}
             lg:w-80 lg:border-l lg:border-gray-200 lg:relative
             ${selectedStation ? 'panel-mobile lg:panel-mobile-reset' : ''}
             bg-white overflow-y-auto
           `}
           style={selectedStation ? { zIndex: 40 } : undefined}
         >
+          <RoutePanel
+            routes={routes}
+            walkingRoute={walkingRoute}
+            loading={routeLoading}
+            error={routeError}
+            selectedIndex={selectedRouteIndex}
+            onSelectRoute={setSelectedRouteIndex}
+          />
           <StationPanel
             station={selectedStation}
             loading={loading}
