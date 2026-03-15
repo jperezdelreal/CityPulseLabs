@@ -2,10 +2,12 @@
 import type { StationData } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import ConfidenceBadge from '../shared/ConfidenceBadge.tsx';
+import PredictionBadge from '../shared/PredictionBadge.tsx';
 import {
   calculatePickupConfidence,
   calculateDropoffConfidence,
 } from '../../services/confidenceScore.ts';
+import { usePrediction } from '../../hooks/usePrediction.ts';
 
 interface StationPopupProps {
   station: StationData;
@@ -30,6 +32,7 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
 
   const pickupConf = calculatePickupConfidence(station, 0);
   const dropoffConf = calculateDropoffConfidence(station, 0);
+  const { prediction, loading: predLoading } = usePrediction(station.station_id);
 
   return (
     <Popup>
@@ -79,6 +82,10 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
 
           <div className="pt-1 text-gray-400">
             Updated {formatLastReported(station.last_reported)}
+          </div>
+
+          <div className="pt-1 border-t border-gray-200">
+            <PredictionBadge prediction={prediction} loading={predLoading} />
           </div>
         </div>
       </div>
