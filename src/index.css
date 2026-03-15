@@ -3,3 +3,13 @@
 body {
   margin: 0;
 }
+
+/* Reset mobile bottom-sheet positioning on desktop */
+@media (min-width: 1024px) {
+  .panel-mobile-reset {
+    position: static !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+}

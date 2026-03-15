@@ -8,6 +8,23 @@ vi.mock('react-leaflet', () => ({
     <div data-testid="map-container">{children}</div>
   ),
   TileLayer: () => <div data-testid="tile-layer" />,
+  ZoomControl: () => <div data-testid="zoom-control" />,
+  CircleMarker: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="circle-marker">{children}</div>
+  ),
+  Popup: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="popup">{children}</div>
+  ),
+}));
+
+// Mock useStations hook
+vi.mock('./hooks/useStations', () => ({
+  useStations: () => ({
+    stations: [],
+    loading: false,
+    error: null,
+    lastUpdated: null,
+  }),
 }));
 
 describe('App', () => {
