@@ -39,16 +39,20 @@ async function fetchRoute(
     );
   }
 
-  // ORS expects [lng, lat] order
-  const start = `${from.lng},${from.lat}`;
-  const end = `${to.lng},${to.lat}`;
-
-  const url = `${ORS_BASE_URL}/${profile}?start=${start}&end=${end}`;
+  // ORS v2 POST requires [lng, lat] coordinate order
+  const url = `${ORS_BASE_URL}/${profile}/geojson`;
   const response = await fetchWithRetry(url, {
+    method: 'POST',
     headers: {
-      'Accept': 'application/json, application/geo+json',
       'Authorization': apiKey,
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      coordinates: [
+        [from.lng, from.lat],
+        [to.lng, to.lat],
+      ],
+    }),
   });
 
   if (!response.ok) {
