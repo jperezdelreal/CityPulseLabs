@@ -3,10 +3,20 @@ import type { LatLng, MultiModalRoute, WalkingRoute, StationSummary } from '../t
 import { haversineDistance, getWalkingRoute, getCyclingRoute } from './routing.ts';
 import { type BikeType, getVehicleTypeCount } from './bikeTypeFilter.ts';
 
+/** Thrown when ORS quota is exhausted (429) to enable user-friendly messaging */
+export class QuotaExhaustedError extends Error {
+  constructor() {
+    super('Servicio de rutas temporalmente no disponible. Prueba de nuevo más tarde.');
+    this.name = 'QuotaExhaustedError';
+  }
+}
+
 const MAX_WALKING_DISTANCE_M = 1000;
-const TOP_N = 3;
-// Limit candidate pairs to avoid excessive API calls
-const MAX_CANDIDATES = 6;
+const TOP_N = 2;
+// Limit pickup/dropoff candidates to reduce ORS API calls (3 pickup × 1 dropoff = 3 pairs × 3 calls = 9 max)
+const TOP_PICKUP_STATIONS = 3;
+const TOP_DROPOFF_STATIONS = 1;
+const MAX_CANDIDATE_PAIRS = 3;
 // Process route pairs in parallel batches to avoid ORS rate limiting
 const BATCH_SIZE = 3;
 // EFIT bonus: extra score points when preferred EFIT is available
@@ -90,8 +100,8 @@ export async function calculateMultiModalRoutes(
   bikeType: BikeType = 'any',
   signal?: AbortSignal,
 ): Promise<MultiModalRoute[]> {
-  const pickups = filterPickupStations(stations, origin, MAX_WALKING_DISTANCE_M, bikeType).slice(0, MAX_CANDIDATES);
-  const dropoffs = filterDropoffStations(stations, destination).slice(0, MAX_CANDIDATES);
+  const pickups = filterPickupStations(stations, origin, MAX_WALKING_DISTANCE_M, bikeType).slice(0, TOP_PICKUP_STATIONS);
+  const dropoffs = filterDropoffStations(stations, destination).slice(0, TOP_DROPOFF_STATIONS);
 
   if (pickups.length === 0 || dropoffs.length === 0) {
     return [];
@@ -117,7 +127,7 @@ export async function calculateMultiModalRoutes(
         haversineDistance(p.dropoff.lat, p.dropoff.lon, destination.lat, destination.lng),
     }))
     .sort((a, b) => a.estimatedDist - b.estimatedDist)
-    .slice(0, MAX_CANDIDATES);
+    .slice(0, MAX_CANDIDATE_PAIRS);
 
   type ScoredRoute = MultiModalRoute & { _scoring_time: number };
   const routes: ScoredRoute[] = [];
@@ -162,7 +172,11 @@ export async function calculateMultiModalRoutes(
             bike_distance_meters: bikeSegment.distance_meters,
             _scoring_time: walkTime + bikeTime + efitBonus,
           } as ScoredRoute;
-        } catch {
+        } catch (err) {
+          // If ORS quota is exhausted, stop immediately with user-friendly message
+          if (err instanceof Error && (err.message.includes('429') || err.message.includes('quota'))) {
+            throw new QuotaExhaustedError();
+          }
           return null;
         }
       }),

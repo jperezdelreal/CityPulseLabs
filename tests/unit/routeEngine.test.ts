@@ -7,6 +7,7 @@ import {
   calculateWalkingOnly,
   BIKE_TYPE_SPEED_FACTOR,
   getBikeTypeLabel,
+  QuotaExhaustedError,
 } from '../../src/services/routeEngine';
 import { haversineDistance } from '../../src/services/routing';
 
@@ -245,7 +246,7 @@ describe('calculateMultiModalRoutes', () => {
     const result = await calculateMultiModalRoutes(origin, destination, allStations);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result.length).toBeLessThanOrEqual(3);
+    expect(result.length).toBeLessThanOrEqual(2);
 
     for (let i = 1; i < result.length; i++) {
       expect(result[i].total_time_seconds).toBeGreaterThanOrEqual(result[i - 1].total_time_seconds);
@@ -286,12 +287,12 @@ describe('calculateMultiModalRoutes', () => {
     expect(route.bike_distance_meters).toBe(2000);
   });
 
-  it('returns at most 3 routes', async () => {
+  it('returns at most 2 routes', async () => {
     mockedGetWalkingRoute.mockResolvedValue(mockRouteResponse(100, 150));
     mockedGetCyclingRoute.mockResolvedValue(mockRouteResponse(300, 1000));
 
     const result = await calculateMultiModalRoutes(origin, destination, allStations);
-    expect(result.length).toBeLessThanOrEqual(3);
+    expect(result.length).toBeLessThanOrEqual(2);
   });
 
   it('handles API failures gracefully by skipping failed routes', async () => {
@@ -302,6 +303,14 @@ describe('calculateMultiModalRoutes', () => {
 
     const result = await calculateMultiModalRoutes(origin, destination, allStations);
     expect(Array.isArray(result)).toBe(true);
+  });
+
+  it('throws QuotaExhaustedError when ORS returns 429', async () => {
+    mockedGetWalkingRoute.mockRejectedValue(new Error('429: quota exceeded'));
+
+    await expect(
+      calculateMultiModalRoutes(origin, destination, allStations),
+    ).rejects.toThrow(QuotaExhaustedError);
   });
 });
 

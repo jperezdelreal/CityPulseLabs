@@ -2,7 +2,7 @@ import { app } from '@azure/functions';
 import type { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 
 const ORS_BASE_URL = 'https://api.openrouteservice.org/v2/directions';
-const CACHE_TTL_MS = 30_000; // 30s — matches frontend cache
+const CACHE_TTL_MS = 300_000; // 5 min — nearby searches hit cache instead of ORS
 const MAX_CACHE_SIZE = 200;
 const ORS_TIMEOUT_MS = 15_000;
 
@@ -22,8 +22,9 @@ function evictStale(): void {
 }
 
 function cacheKey(profile: string, coordinates: number[][]): string {
+  // Round to 3 decimals (~110m precision) to maximize cache hits for nearby searches
   const coords = coordinates
-    .map(([lng, lat]) => `${lng.toFixed(5)},${lat.toFixed(5)}`)
+    .map(([lng, lat]) => `${lng.toFixed(3)},${lat.toFixed(3)}`)
     .join('|');
   return `${profile}:${coords}`;
 }
@@ -131,7 +132,9 @@ async function routesHandler(
         status: orsResponse.status === 429 ? 429 : 502,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          error: 'Route calculation failed',
+          error: orsResponse.status === 429
+            ? 'Servicio de rutas temporalmente no disponible. Prueba de nuevo más tarde.'
+            : 'Route calculation failed',
           upstream_status: orsResponse.status,
         }),
       };
