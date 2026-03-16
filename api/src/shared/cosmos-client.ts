@@ -1,4 +1,5 @@
 import { CosmosClient, type Container } from '@azure/cosmos';
+import { DefaultAzureCredential } from '@azure/identity';
 
 const DB_NAME = 'bici-coruna';
 const CONTAINER_NAME = 'station-snapshots';
@@ -9,11 +10,20 @@ export function getContainer(): Container {
   if (container) return container;
 
   const connectionString = process.env.COSMOS_CONNECTION_STRING;
-  if (!connectionString) {
-    throw new Error('COSMOS_CONNECTION_STRING environment variable is not set');
+  const endpoint = process.env.COSMOS_ENDPOINT;
+
+  let client: CosmosClient;
+  if (connectionString) {
+    client = new CosmosClient(connectionString);
+  } else if (endpoint) {
+    // Use Managed Identity (AAD RBAC) when local auth is disabled
+    client = new CosmosClient({ endpoint, aadCredentials: new DefaultAzureCredential() });
+  } else {
+    throw new Error(
+      'Either COSMOS_CONNECTION_STRING or COSMOS_ENDPOINT must be set',
+    );
   }
 
-  const client = new CosmosClient(connectionString);
   container = client.database(DB_NAME).container(CONTAINER_NAME);
   return container;
 }
