@@ -165,6 +165,6 @@ export async function stationCollector(
 // ---------------------------------------------------------------------------
 
 app.timer('stationCollector', {
-  schedule: '0 */10 * * * *',
+  schedule: '0 */5 * * * *',
   handler: stationCollector,
 });
