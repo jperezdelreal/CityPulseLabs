@@ -34,45 +34,17 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build
+      - name: Build app
         run: npm run build
         env:
           VITE_ORS_API_KEY: ${{ secrets.VITE_ORS_API_KEY }}
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-build
-          path: dist/
-
-  deploy:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-    needs: build_and_test
-    runs-on: ubuntu-latest
-    name: Deploy to SWA
-    environment:
-      name: ${{ github.event_name == 'pull_request' && format('preview-pr-{0}', github.event.pull_request.number) || 'production' }}
-      url: ${{ steps.deploy.outputs.static_web_app_url }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-build
-          path: dist/
+      - name: Build API
+        run: cd api && npm run build
 
       - name: Deploy to Azure Static Web Apps
         id: deploy
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: 'upload'
-          app_location: '/'
-          api_location: 'api'
-          output_location: 'dist'
-          skip_app_build: true
+        run: npx @azure/static-web-apps-cli deploy ./dist --api-location ./api --env ${{ github.event_name == 'pull_request' && format('preview-pr-{0}', github.event.pull_request.number) || 'production' }} --api-language node --api-version 20 --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
