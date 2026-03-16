@@ -1,8 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import MapView from './components/Map/MapView.tsx';
-import StationPanel from './components/StationPanel/StationPanel.tsx';
-import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
-import SearchBar from './components/SearchBar/SearchBar.tsx';
+import UnifiedPanel from './components/UnifiedPanel/UnifiedPanel.tsx';
 import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
 import OfflineIndicator from './components/shared/OfflineIndicator.tsx';
 import RainWarning from './components/shared/RainWarning.tsx';
@@ -38,7 +36,7 @@ function App() {
     [stations, bikeType],
   );
 
-  const { routes, walkingRoute, loading: routeLoading, error: routeError } = useRoutes(origin, destination, stations, bikeType);
+  const { routes, walkingRoute, loading: routeLoading, error: routeError, retry: retryRoutes } = useRoutes(origin, destination, stations, bikeType);
 
   const handleClearRoute = useCallback(() => {
     setOrigin(null);
@@ -47,7 +45,7 @@ function App() {
     setHoveredRouteIndex(null);
   }, []);
 
-  const hasActiveContent = !!(selectedStation || origin || destination);
+  const hasActiveContent = !!(origin || destination);
 
   return (
     <div className="h-screen w-screen flex flex-col">
@@ -100,71 +98,35 @@ function App() {
             nearestStation={nearestStation}
             onRequestPosition={geo.requestPosition}
           />
-          <SearchBar
-            origin={origin}
-            destination={destination}
-            onSetOrigin={setOrigin}
-            onSetDestination={setDestination}
-            onClearRoute={handleClearRoute}
-          />
           {!hasActiveContent && !loading && stations.length > 0 && (
             <WelcomeCTA stationCount={stations.length} />
           )}
         </main>
 
-        {/* Sidebar — bottom sheet on mobile, side panel on desktop */}
-        <aside
-          className={`
-            ${hasActiveContent ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
-            ${hasActiveContent ? 'block' : 'hidden lg:block'}
-            fixed bottom-0 left-0 right-0 lg:static
-            lg:w-[340px] xl:w-[380px] lg:border-l lg:border-gray-200
-            panel-mobile lg:panel-mobile-reset
-            bg-white overflow-y-auto
-            max-h-[70vh] lg:max-h-full
-            transition-all duration-300 ease-out
-          `}
-          style={hasActiveContent ? { zIndex: 40 } : undefined}
-        >
-          {/* Mobile drag handle */}
-          <div className="flex justify-center pt-3 pb-2 lg:hidden" aria-hidden="true">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-
-          {/* Clear route button — visible when route is active */}
-          {(origin || destination) && (
-            <div className="px-4 pb-2 lg:pt-2">
-              <button
-                onClick={handleClearRoute}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 text-sm font-medium transition-colors min-h-[44px]"
-                data-testid="clear-route-panel"
-              >
-                <span aria-hidden="true">✕</span>
-                Borrar ruta
-              </button>
-            </div>
-          )}
-
-          <RoutePanel
-            routes={routes}
-            walkingRoute={walkingRoute}
-            stations={stations}
-            loading={routeLoading}
-            error={routeError}
-            selectedIndex={selectedRouteIndex}
-            onSelectRoute={setSelectedRouteIndex}
-            onHoverRoute={setHoveredRouteIndex}
-            stationCount={stations.length}
-          />
-          <StationPanel
-            station={selectedStation}
-            loading={loading}
-            error={error}
-            lastUpdated={lastUpdated}
-            onClose={() => setSelectedStation(null)}
-            preferredBikeType={bikeType}
-          />
-        </aside>
+        {/* Unified Panel — bottom sheet on mobile, side panel on desktop */}
+        <UnifiedPanel
+          origin={origin}
+          destination={destination}
+          onSetOrigin={setOrigin}
+          onSetDestination={setDestination}
+          onClearRoute={handleClearRoute}
+          routes={routes}
+          walkingRoute={walkingRoute}
+          stations={stations}
+          routeLoading={routeLoading}
+          routeError={routeError}
+          selectedRouteIndex={selectedRouteIndex}
+          onSelectRoute={setSelectedRouteIndex}
+          onHoverRoute={setHoveredRouteIndex}
+          onRetryRoutes={retryRoutes}
+          selectedStation={selectedStation}
+          stationsLoading={loading}
+          stationsError={error}
+          lastUpdated={lastUpdated}
+          onCloseStation={() => setSelectedStation(null)}
+          bikeType={bikeType}
+          geoPosition={geo.position}
+        />
       </div>
     </div>
   );

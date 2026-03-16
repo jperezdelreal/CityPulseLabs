@@ -5,7 +5,7 @@ interface WelcomeCTAProps {
 export default function WelcomeCTA({ stationCount }: WelcomeCTAProps) {
   return (
     <div
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[999] w-[calc(100%-2rem)] max-w-sm"
+      className="absolute bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-[30] w-[calc(100%-2rem)] max-w-sm"
       data-testid="welcome-cta"
     >
       <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl px-5 py-4 text-center border border-gray-100">

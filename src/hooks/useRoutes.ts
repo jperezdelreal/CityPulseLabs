@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { LatLng, MultiModalRoute, WalkingRoute } from '../types/index.ts';
 import type { StationData } from '../types/gbfs.ts';
 import type { BikeType } from '../services/bikeTypeFilter.ts';
@@ -9,6 +9,7 @@ interface UseRoutesResult {
   walkingRoute: WalkingRoute | null;
   loading: boolean;
   error: string | null;
+  retry: () => void;
 }
 
 export function useRoutes(
@@ -23,6 +24,7 @@ export function useRoutes(
     loading: boolean;
     error: string | null;
   }>({ routes: [], walkingRoute: null, loading: false, error: null });
+  const [retryCount, setRetryCount] = useState(0);
 
   const hasEndpoints = origin !== null && destination !== null;
 
@@ -58,12 +60,16 @@ export function useRoutes(
     return () => {
       cancelled = true;
     };
-  }, [origin, destination, stations, bikeType]);
+  }, [origin, destination, stations, bikeType, retryCount]);
+
+  const retry = useCallback(() => {
+    setRetryCount((c) => c + 1);
+  }, []);
 
   return useMemo(() => {
     if (!hasEndpoints) {
-      return { routes: [], walkingRoute: null, loading: false, error: null };
+      return { routes: [], walkingRoute: null, loading: false, error: null, retry };
     }
-    return result;
-  }, [hasEndpoints, result]);
+    return { ...result, retry };
+  }, [hasEndpoints, result, retry]);
 }
