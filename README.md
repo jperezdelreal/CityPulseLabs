@@ -14,12 +14,14 @@
 🟢 **LIVE** — App deployed at [https://icy-cliff-065550703.2.azurestaticapps.net](https://icy-cliff-065550703.2.azurestaticapps.net)
 
 ### Implementation Summary
-- **v0.1 (MVP)**: 7 issues — scaffolding, Azure IaC, GBFS, map, routing, data pipeline, CI/CD
-- **v0.2 (Smart Features)**: 6 issues — confidence score, prediction, bike types, rain, stats, geofencing
-- **v0.3 (Enhanced Intelligence)**: 4 issues — enhanced prediction, predictive confidence, routing optimization, PWA
-- **Quality Sprint**: Code review, UI polish, geolocation, error handling hardening
-- **Cross-cutting**: 2 issues — docs, UI/UX design
-- **Totals**: 19+ issues closed, ~18 PRs merged, 231+ tests passing
+- **v0.1 (MVP)**: 7 issues — scaffolding, Azure IaC, GBFS, map, routing, data pipeline, CI/CD ✅
+- **v0.2 (Smart Features)**: 6 issues — confidence score, prediction, bike types, rain, stats, geofencing ✅
+- **v0.3 (Enhanced Intelligence)**: 4 issues — enhanced prediction, predictive confidence, routing optimization, PWA ✅
+- **Quality Sprint**: Code review, UI polish, geolocation, error handling hardening ✅
+- **Phase 4 (Production Ready)**: ORS routing fix, CI/CD hardening, address search, data collection active 🔄
+- **Phase 5 (Advanced Predictions)**: Planned after historical data accumulation 📋
+- **Cross-cutting**: 2 issues — docs, UI/UX design ✅
+- **Totals**: 25+ issues closed, ~22 PRs merged, 231+ tests passing
 - **UI Language**: All text in Spanish (Planificador inteligente de rutas en bici)
 - **Built by**: Syntax Sorcery's AI team
 
@@ -29,10 +31,10 @@
 | Project scaffolding | ✅ Done | React 19 + Vite + TypeScript + Tailwind + Leaflet |
 | Azure infrastructure (IaC) | ✅ Done | Bicep templates for SWA + Functions + Cosmos DB |
 | GBFS data integration | ✅ Done | TypeScript service with types, hooks, proxy function (12 tests) |
-| Data collection pipeline | ✅ Done | Timer Trigger → Cosmos DB (15 tests) |
+| Data collection pipeline | 🔄 Activated | Timer Trigger → Cosmos DB, monitoring data ingestion (15 tests) |
 | Interactive map | ✅ Done | Live station markers, popups, live indicator (15 tests) |
-| Route calculator | ✅ Done | Multi-modal routing (Walk→Bike→Walk, 19 tests) |
-| CI/CD pipeline | ✅ Done | GitHub Actions for SWA deployment |
+| Route calculator | ✅ Done | Multi-modal routing with real ORS POST API (19 tests) |
+| CI/CD pipeline | ✅ Working | GitHub Actions + SWA CLI deployment verified |
 | UI/UX design system | ✅ Done | Color tokens, responsive breakpoints, map styling |
 | Documentation | ✅ Done | Architecture & data sources documentation |
 | **v0.2 Components** | | |
@@ -41,12 +43,12 @@
 | Rain warning | ✅ Done | Real-time precipitation alerts via Open-Meteo (7 tests) |
 | Route stats | ✅ Done | Distance, time, calories, CO₂ savings per route (16 tests) |
 | Geofencing | ✅ Done | Service area overlay with out-of-zone warnings (29 tests) |
-| Availability prediction | ✅ Done | Server-side prediction function (255 tests) |
+| Availability prediction | ⏳ Staging | Heuristic-based in Phase 4; awaiting 2-3 weeks of historical data (255 tests) |
 | **v0.3 Components** | | |
-| Enhanced prediction | ✅ Done | Improved forecasting with confidence levels (95+ tests) |
+| Enhanced prediction | ⏳ Staging | Improved forecasting ready; accuracy pending historical data |
 | PWA with offline support | ✅ Done | Service worker, offline indicator, manifest (61+ tests) |
 | Routing optimization | ✅ Done | Multi-leg route scoring and alternative paths |
-| Predictive confidence | ✅ Done | Visual badges for route reliability |
+| Predictive confidence | ⏳ Staging | Visual badges implemented; awaiting training data |
 | **Quality Sprint** | | |
 | Geolocation | ✅ Done | Browser geolocation with nearest station, permission handling |
 | Error handling hardening | ✅ Done | Retry logic, graceful degradation, safety guards |
@@ -74,19 +76,23 @@ Rain warning: ☂️ 65% chance in 15 minutes
 Offline mode: Works without internet connection
 ```
 
-### Key Features (All Implemented ✅)
+### Key Features Status
 
+**Phase 4 — Live & Working ✅**
 - **Live Station Data**: Real-time bike and dock availability across 55 BiciCoruña stations ✅
 - **Geolocation**: Browser-based location with nearest station finder ✅
-- **Confidence Scores**: 🟢🟡🔴 heuristic availability badges so you know if a bike/dock will still be there ✅
+- **Confidence Scores**: 🟢🟡🔴 heuristic availability badges ✅
 - **Bike Type Filtering**: Filter stations by FIT, EFIT, or BOOST bike types ✅
 - **Weather Integration**: Rain warnings and precipitation alerts via Open-Meteo ✅
 - **Route Stats**: Distance, time, calories burned, and CO₂ savings per route ✅
 - **Geofencing**: Service area overlay with out-of-zone warnings ✅
-- **Intermodal Routes**: Seamless walking + biking combinations with multi-leg optimization ✅
-- **Demand Prediction**: AI forecasts station occupancy with confidence levels ✅
+- **Intermodal Routes**: Seamless walking + biking combinations with ORS routing ✅
 - **Progressive Web App**: Offline support, installable on mobile devices ✅
 - **Responsive Web UI**: Works on desktop and mobile devices, all text in Spanish ✅
+
+**Phase 5 — Pending Historical Data ⏳**
+- **ML-based Demand Prediction**: Awaiting 2–3 weeks of historical time-series data from Cosmos DB
+- **Enhanced Prediction Confidence**: Will provide statistical forecasts once model training is possible
 
 ---
 
@@ -94,12 +100,12 @@ Offline mode: Works without internet connection
 
 | Layer | Technology | Purpose | Status |
 |-------|-----------|---------|--------|
-| **Frontend** | React 19, Vite, TypeScript, Tailwind CSS, Leaflet.js | Interactive map UI, route planning interface | ✅ Done |
-| **Backend** | Azure Functions (Node.js) | REST API for stations, predictions, weather | 🔄 In Progress |
-| **Database** | Azure Cosmos DB Serverless (NoSQL) | Time-series data, demand predictions, cache | ✅ IaC Done |
-| **Data Ingestion** | Azure Functions (Timer Trigger) | GBFS polling, data enrichment, preprocessing | ✅ Done |
-| **Infrastructure** | Azure (IaC via Bicep) | Serverless deployment templates | ✅ Done |
-| **CI/CD** | GitHub Actions | Automated SWA deployment | ✅ Done |
+| **Frontend** | React 19, Vite, TypeScript, Tailwind CSS, Leaflet.js | Interactive map UI, route planning interface | ✅ Live |
+| **Backend** | Azure Functions (Node.js) | REST API for stations, predictions, weather | ✅ Live (POST routing, ORS integration) |
+| **Database** | Azure Cosmos DB Serverless (NoSQL) | Time-series data, demand predictions, cache | 🔄 Collecting data |
+| **Data Ingestion** | Azure Functions (Timer Trigger) | GBFS polling, data enrichment, preprocessing | 🔄 Active (60s poll) |
+| **Infrastructure** | Azure (IaC via Bicep) | Serverless deployment templates | ✅ Live |
+| **CI/CD** | GitHub Actions + SWA CLI | Automated Azure Static Web Apps deployment | ✅ Working |
 
 ---
 
@@ -309,8 +315,21 @@ For detailed deployment options, see [docs/architecture.md](docs/architecture.md
 ### Deployment (Live ✅)
 - ✅ Azure Static Web Apps deployment at [icy-cliff-065550703.2.azurestaticapps.net](https://icy-cliff-065550703.2.azurestaticapps.net)
 
+### v0.4 — Phase 4: Production Ready (In Progress 🔄)
+- ✅ Fixed ORS routing: Switched from GET to POST API with real production key
+- ✅ Fixed CI/CD: SWA CLI deployment now working with verified Azure authentication
+- ✅ Address search: Nominatim geocoding integration for location-based queries
+- 🔄 Data collection: Timer Trigger actively collecting data to Cosmos DB (2+ weeks)
+- ⏳ ML predictions: Waiting for historical data accumulation (~2–3 weeks total)
+
+### v0.5 — Phase 5: Advanced Predictions (Planned 📋)
+- 📋 ML demand forecasting: Train models using accumulated time-series data
+- 📋 Station occupancy predictions: Statistical confidence intervals
+- 📋 Route reliability scoring: Confidence-based route selection
+- 📋 User feedback loop: Gather user behavior data for continuous improvement
+
 ### Next Steps
-- **Historical Data**: Enable more accurate predictions after 30+ days of data collection
+- **Historical Data**: Currently collecting; enable ML training after 2–3 weeks of data
 - **User Feedback**: Gather feedback and optimize route algorithms
 
 ---
