@@ -4,7 +4,7 @@
  * A proper mobile bottom sheet that:
  * - Starts as a compact peek bar (shows route summary)
  * - Expands with swipe-up gesture to show full results
- * - Swipeable horizontal cards for route comparison
+ * - Vertical list of route cards for easy comparison
  * - All touch targets ≥ 48px
  * - Overscroll containment
  */
@@ -80,8 +80,8 @@ export default function MobileRoutePanel({
 }: MobileRoutePanelProps) {
   const [expanded, setExpanded] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const routesWithConfidence = routes.map((route) => ({
     route,
@@ -97,45 +97,20 @@ export default function MobileRoutePanel({
 
   const hasContent = routesWithConfidence.length > 0 || routeLoading || routeError || selectedStation;
 
-  // Auto-expand when routes arrive
-  useEffect(() => {
-    if (routesWithConfidence.length > 0 || routeLoading) {
-      setExpanded(true);
-    }
-  }, [routesWithConfidence.length, routeLoading]);
-
+  // Auto-expand only when user taps a station (not on routes arrival)
   useEffect(() => {
     if (selectedStation) setExpanded(true);
   }, [selectedStation]);
 
-  // Scroll snap: detect centered card
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const cards = el.querySelectorAll<HTMLElement>('[data-route-card]');
-    const containerCenter = el.scrollLeft + el.clientWidth / 2;
-    let closestIdx = 0;
-    let closestDist = Infinity;
-    cards.forEach((card, i) => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-      const dist = Math.abs(containerCenter - cardCenter);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestIdx = i;
-      }
-    });
-    if (closestIdx !== selectedRouteIndex) {
-      onSelectRoute(closestIdx);
-    }
-  }, [selectedRouteIndex, onSelectRoute]);
-
   // Swipe gestures on drag handle
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
   }, []);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
+    setIsDragging(false);
     if (deltaY > 60 && !hasContent) {
       setExpanded(false);
     } else if (deltaY < -60) {
@@ -163,24 +138,22 @@ export default function MobileRoutePanel({
           onClick={() => setExpanded(!expanded)}
           aria-hidden="true"
         >
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div className={`w-10 h-1 rounded-full transition-all ${isDragging ? 'bg-gray-400 scale-x-110' : 'bg-gray-300'}`} />
         </div>
 
         {/* Collapsed peek: show summary */}
         {!expanded && routesWithConfidence.length > 0 && (
           <button
             onClick={() => setExpanded(true)}
-            className="px-4 pb-3 flex items-center justify-between w-full text-left"
+            className="px-4 pb-3 flex items-center justify-between w-full text-left min-h-[48px]"
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">🗺️</span>
               <span className="text-sm font-semibold text-gray-900">
-                {routesWithConfidence.length} ruta{routesWithConfidence.length > 1 ? 's' : ''} disponible{routesWithConfidence.length > 1 ? 's' : ''}
+                {routesWithConfidence.length} ruta{routesWithConfidence.length > 1 ? 's' : ''} disponible{routesWithConfidence.length > 1 ? 's' : ''} · ~{formatDuration(routesWithConfidence[0].route.total_time_seconds)}
               </span>
             </div>
-            <span className="text-lg font-bold text-primary-700">
-              {formatDuration(routesWithConfidence[0].route.total_time_seconds)}
-            </span>
+            <span className="text-xs text-gray-500">Toca para ver</span>
           </button>
         )}
 
@@ -237,12 +210,8 @@ export default function MobileRoutePanel({
                   </h2>
                 </div>
 
-                <div
-                  ref={scrollRef}
-                  onScroll={handleScroll}
-                  className="flex gap-3 overflow-x-auto px-4 pb-3 snap-x snap-mandatory scroll-smooth"
-                  style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
-                >
+                {/* Route cards — vertical list */}
+                <div className="px-4 space-y-3 pb-3">
                   {routesWithConfidence.map(({ route, confidence }, i) => {
                     const isSelected = i === selectedRouteIndex;
                     const bikeMinutes = Math.round(route.total_time_seconds / 60);
@@ -252,14 +221,13 @@ export default function MobileRoutePanel({
                     const bikeLabel = bikeType ? getBikeTypeLabel(bikeType) : null;
 
                     return (
-                      <div
+                      <button
                         key={`${route.pickup_station.station_id}-${route.dropoff_station.station_id}`}
-                        data-route-card
                         onClick={() => onSelectRoute(i)}
-                        className={`flex-shrink-0 w-[82vw] max-w-[340px] snap-center rounded-2xl p-4 border-2 transition-all ${
+                        className={`w-full rounded-2xl p-4 transition-all text-left ${
                           isSelected
-                            ? 'border-primary-500 bg-primary-50/30 shadow-lg'
-                            : 'border-gray-200 bg-white shadow-md'
+                            ? 'bg-primary-50/30 shadow-md border-l-[3px] border-primary-500'
+                            : 'bg-white shadow-sm border-l-[3px] border-transparent hover:border-gray-300'
                         }`}
                       >
                         {/* Header */}
@@ -307,26 +275,10 @@ export default function MobileRoutePanel({
                             ⏱ Ahorras {timeSaved} min vs caminar
                           </div>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
-
-                {/* Dot indicators */}
-                {routesWithConfidence.length > 1 && (
-                  <div className="flex justify-center gap-1.5 pb-2">
-                    {routesWithConfidence.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => onSelectRoute(i)}
-                        className={`h-2 rounded-full transition-all ${
-                          i === selectedRouteIndex ? 'bg-primary-500 w-4' : 'bg-gray-300 w-2'
-                        }`}
-                        aria-label={`Ruta ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
 
                 {/* Step-by-step expandable */}
                 {selectedRoute && (

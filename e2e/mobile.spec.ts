@@ -109,7 +109,7 @@ test.describe('Mobile — Route Panel (Bottom Sheet)', () => {
     await page.waitForSelector('[data-testid="mobile-app"]', { timeout: 15_000 });
   });
 
-  test('bottom sheet / route panel appears when route is calculated', async ({ page }) => {
+  test('bottom sheet appears collapsed when routes are calculated', async ({ page }) => {
     const map = page.locator('.leaflet-container');
     await expect(map).toBeVisible({ timeout: 10_000 });
 
@@ -130,6 +130,178 @@ test.describe('Mobile — Route Panel (Bottom Sheet)', () => {
     // Route panel should become visible (loading or with results)
     const routePanel = page.locator('[data-testid="mobile-route-panel"]');
     await expect(routePanel).toBeVisible({ timeout: 10_000 });
+
+    // Panel should start collapsed (80px peek bar)
+    const panelBox = await routePanel.boundingBox();
+    expect(panelBox).not.toBeNull();
+    
+    // Collapsed state should be ~80px (allow some tolerance for rendering)
+    expect(panelBox!.height).toBeLessThan(120);
+    expect(panelBox!.height).toBeGreaterThan(60);
+  });
+
+  test('peek bar shows route count and can be tapped to expand', async ({ page }) => {
+    const map = page.locator('.leaflet-container');
+    await expect(map).toBeVisible({ timeout: 10_000 });
+
+    const mapBox = await map.boundingBox();
+    expect(mapBox).not.toBeNull();
+
+    // Set origin and destination
+    await page.tap('.leaflet-container', {
+      position: { x: mapBox!.width / 3, y: mapBox!.height / 3 },
+    });
+    await page.waitForTimeout(500);
+    await page.tap('.leaflet-container', {
+      position: { x: (mapBox!.width * 2) / 3, y: (mapBox!.height * 2) / 3 },
+    });
+
+    const routePanel = page.locator('[data-testid="mobile-route-panel"]');
+    await expect(routePanel).toBeVisible({ timeout: 10_000 });
+
+    // Wait for routes to load (loading spinner disappears)
+    await page.waitForTimeout(3000);
+
+    // Peek bar should show route count text
+    const peekText = page.locator('text=/ruta.*disponible/i');
+    await expect(peekText).toBeVisible({ timeout: 5_000 });
+
+    // Get initial collapsed height
+    const collapsedBox = await routePanel.boundingBox();
+    expect(collapsedBox).not.toBeNull();
+    const collapsedHeight = collapsedBox!.height;
+
+    // Tap peek bar to expand
+    await peekText.tap();
+    await page.waitForTimeout(500); // Allow transition
+
+    // Panel should expand (significantly taller)
+    const expandedBox = await routePanel.boundingBox();
+    expect(expandedBox).not.toBeNull();
+    expect(expandedBox!.height).toBeGreaterThan(collapsedHeight * 2);
+  });
+
+  test('route cards are displayed as vertical list (not horizontal scroll)', async ({ page }) => {
+    const map = page.locator('.leaflet-container');
+    await expect(map).toBeVisible({ timeout: 10_000 });
+
+    const mapBox = await map.boundingBox();
+    expect(mapBox).not.toBeNull();
+
+    // Set origin and destination
+    await page.tap('.leaflet-container', {
+      position: { x: mapBox!.width / 3, y: mapBox!.height / 3 },
+    });
+    await page.waitForTimeout(500);
+    await page.tap('.leaflet-container', {
+      position: { x: (mapBox!.width * 2) / 3, y: (mapBox!.height * 2) / 3 },
+    });
+
+    const routePanel = page.locator('[data-testid="mobile-route-panel"]');
+    await expect(routePanel).toBeVisible({ timeout: 10_000 });
+
+    // Expand the panel
+    await page.waitForTimeout(3000);
+    const peekText = page.locator('text=/ruta.*disponible/i');
+    await expect(peekText).toBeVisible({ timeout: 5_000 });
+    await peekText.tap();
+    await page.waitForTimeout(500);
+
+    // Find route cards container
+    const cardsContainer = page.locator('.space-y-3').first();
+    await expect(cardsContainer).toBeVisible();
+
+    // Verify no horizontal scroll classes
+    const containerClass = await cardsContainer.getAttribute('class');
+    expect(containerClass).not.toContain('overflow-x-auto');
+    expect(containerClass).not.toContain('snap-x');
+
+    // Route cards should stack vertically (check Y positions)
+    const routeCards = page.locator('button[class*="rounded-2xl"]');
+    const cardCount = await routeCards.count();
+    
+    if (cardCount >= 2) {
+      const firstCardBox = await routeCards.nth(0).boundingBox();
+      const secondCardBox = await routeCards.nth(1).boundingBox();
+      
+      expect(firstCardBox).not.toBeNull();
+      expect(secondCardBox).not.toBeNull();
+      
+      // Second card should be below first card (not side-by-side)
+      expect(secondCardBox!.y).toBeGreaterThan(firstCardBox!.y + firstCardBox!.height / 2);
+    }
+  });
+
+  test('selected route has visible green left border', async ({ page }) => {
+    const map = page.locator('.leaflet-container');
+    await expect(map).toBeVisible({ timeout: 10_000 });
+
+    const mapBox = await map.boundingBox();
+    expect(mapBox).not.toBeNull();
+
+    // Set origin and destination
+    await page.tap('.leaflet-container', {
+      position: { x: mapBox!.width / 3, y: mapBox!.height / 3 },
+    });
+    await page.waitForTimeout(500);
+    await page.tap('.leaflet-container', {
+      position: { x: (mapBox!.width * 2) / 3, y: (mapBox!.height * 2) / 3 },
+    });
+
+    const routePanel = page.locator('[data-testid="mobile-route-panel"]');
+    await expect(routePanel).toBeVisible({ timeout: 10_000 });
+
+    // Expand the panel
+    await page.waitForTimeout(3000);
+    const peekText = page.locator('text=/ruta.*disponible/i');
+    await expect(peekText).toBeVisible({ timeout: 5_000 });
+    await peekText.tap();
+    await page.waitForTimeout(500);
+
+    // Find route cards
+    const routeCards = page.locator('button[class*="rounded-2xl"]');
+    const cardCount = await routeCards.count();
+    
+    if (cardCount >= 1) {
+      // First card should be selected by default
+      const firstCard = routeCards.nth(0);
+      const firstCardClass = await firstCard.getAttribute('class');
+      
+      // Should have primary-500 border color and left border width
+      expect(firstCardClass).toContain('border-primary-500');
+      expect(firstCardClass).toContain('border-l-');
+    }
+  });
+
+  test('no pagination dots are visible', async ({ page }) => {
+    const map = page.locator('.leaflet-container');
+    await expect(map).toBeVisible({ timeout: 10_000 });
+
+    const mapBox = await map.boundingBox();
+    expect(mapBox).not.toBeNull();
+
+    // Set origin and destination
+    await page.tap('.leaflet-container', {
+      position: { x: mapBox!.width / 3, y: mapBox!.height / 3 },
+    });
+    await page.waitForTimeout(500);
+    await page.tap('.leaflet-container', {
+      position: { x: (mapBox!.width * 2) / 3, y: (mapBox!.height * 2) / 3 },
+    });
+
+    const routePanel = page.locator('[data-testid="mobile-route-panel"]');
+    await expect(routePanel).toBeVisible({ timeout: 10_000 });
+
+    // Expand the panel
+    await page.waitForTimeout(3000);
+    const peekText = page.locator('text=/ruta.*disponible/i');
+    await expect(peekText).toBeVisible({ timeout: 5_000 });
+    await peekText.tap();
+    await page.waitForTimeout(500);
+
+    // No pagination dots should exist
+    const paginationDots = page.locator('[class*="pagination"]');
+    await expect(paginationDots).toHaveCount(0);
   });
 });
 

@@ -150,7 +150,7 @@ function App() {
         />
 
         {/* Full-screen map */}
-        <main className="flex-1 relative min-h-0">
+        <main className="flex-1 relative min-h-0 z-[1]">
           <MapView {...mapProps} />
         </main>
 
@@ -171,7 +171,7 @@ function App() {
         </div>
 
         {/* Welcome CTA — between search and bottom sheet */}
-        {!hasActiveContent && !loading && stations.length > 0 && !mobileActiveField && (
+        {!hasActiveContent && !loading && !routeLoading && stations.length > 0 && !mobileActiveField && (
           <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-[30] w-[calc(100%-2rem)] max-w-sm">
             <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl px-5 py-4 text-center border border-gray-100">
               <div className="text-2xl mb-1" aria-hidden="true">👆</div>
@@ -204,7 +204,7 @@ function App() {
         />
 
         {/* Bike type selector — floating pill on mobile */}
-        <div className="absolute top-[140px] right-3 z-[35]">
+        <div className="absolute top-20 right-3 z-[35]">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-1">
             <BikeTypeSelector selectedType={bikeType} onTypeChange={setBikeType} />
           </div>
