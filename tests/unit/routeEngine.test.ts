@@ -389,7 +389,8 @@ describe('BIKE_TYPE_SPEED_FACTOR', () => {
     expect(BIKE_TYPE_SPEED_FACTOR['any']).toBe(1);
   });
 
-  it('BOOST is 15% faster (factor 0.85)', () => {
+  // BOOST hidden until Turbo bikes are available in the network
+  it.skip('BOOST is 15% faster (factor 0.85)', () => {
     expect(BIKE_TYPE_SPEED_FACTOR['BOOST']).toBe(0.85);
   });
 });
@@ -409,7 +410,8 @@ describe('getBikeTypeLabel', () => {
     expect(getBikeTypeLabel('any')).toBeNull();
   });
 
-  it('returns boost label for BOOST', () => {
+  // BOOST hidden until Turbo bikes are available in the network
+  it.skip('returns boost label for BOOST', () => {
     const label = getBikeTypeLabel('BOOST');
     expect(label).not.toBeNull();
     expect(label).toContain('Turbo');
