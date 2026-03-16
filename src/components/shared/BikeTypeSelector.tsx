@@ -9,7 +9,7 @@ const BIKE_TYPE_OPTIONS: { value: BikeType; label: string; icon: string }[] = [
   { value: 'any', label: 'Todas', icon: '🚲' },
   { value: 'FIT', label: 'Mecánica', icon: '🔧' },
   { value: 'EFIT', label: 'Eléctrica', icon: '⚡' },
-  { value: 'BOOST', label: 'Boost', icon: '🚀' },
+  { value: 'BOOST', label: 'Turbo', icon: '🚀' },
 ];
 
 export default function BikeTypeSelector({ selectedType, onTypeChange }: BikeTypeSelectorProps) {

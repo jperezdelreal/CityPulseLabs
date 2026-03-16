@@ -403,7 +403,7 @@ describe('getBikeTypeLabel', () => {
   it('returns boost label for BOOST', () => {
     const label = getBikeTypeLabel('BOOST');
     expect(label).not.toBeNull();
-    expect(label).toContain('Boost');
+    expect(label).toContain('Turbo');
   });
 });
 

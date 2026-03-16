@@ -24,7 +24,7 @@ export function getBikeTypeLabel(bikeType: BikeType): string | null {
     case 'EFIT':
       return '\u26A1 El\u00E9ctrica \u2014 20% m\u00E1s r\u00E1pido en cuestas';
     case 'BOOST':
-      return '\u{1F680} Boost \u2014 15% m\u00E1s r\u00E1pido en cuestas';
+      return '\u{1F680} Turbo \u2014 15% m\u00E1s r\u00E1pido en cuestas';
     default:
       return null;
   }

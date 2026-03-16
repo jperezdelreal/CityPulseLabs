@@ -5,6 +5,12 @@ const ORS_BASE_URL = 'https://api.openrouteservice.org/v2/directions';
 
 type ORSProfile = 'foot-walking' | 'cycling-regular';
 
+// Average speeds for demo mode (m/s)
+const DEMO_WALKING_SPEED = 1.4; // ~5 km/h
+const DEMO_CYCLING_SPEED = 4.2; // ~15 km/h
+// Winding factor: real routes are longer than straight-line distance
+const DEMO_ROUTE_FACTOR = 1.3;
+
 /** Calculate distance between two points using Haversine formula */
 export function haversineDistance(
   lat1: number, lon1: number,
@@ -26,11 +32,41 @@ function getApiKey(): string {
   );
 }
 
+/** Returns true when no ORS API key is configured (demo mode) */
+export function isRoutingDemoMode(): boolean {
+  return !getApiKey();
+}
+
+/** Generate a simulated route using Haversine distance and estimated speeds */
+function simulateRoute(
+  profile: ORSProfile,
+  from: LatLng,
+  to: LatLng,
+): RouteSegment {
+  const straightDistance = haversineDistance(from.lat, from.lng, to.lat, to.lng);
+  const distance = Math.round(straightDistance * DEMO_ROUTE_FACTOR);
+  const speed = profile === 'foot-walking' ? DEMO_WALKING_SPEED : DEMO_CYCLING_SPEED;
+  const duration = Math.round(distance / speed);
+
+  // Build a simple two-point geometry (straight line)
+  const geometry: [number, number][] = [
+    [from.lat, from.lng],
+    [to.lat, to.lng],
+  ];
+
+  return { geometry, duration_seconds: duration, distance_meters: distance };
+}
+
 async function fetchRoute(
   profile: ORSProfile,
   from: LatLng,
   to: LatLng,
 ): Promise<RouteSegment> {
+  // Fall back to simulated routes when no API key is available
+  if (isRoutingDemoMode()) {
+    return simulateRoute(profile, from, to);
+  }
+
   const apiKey = getApiKey();
   // ORS expects [lng, lat] order
   const start = `${from.lng},${from.lat}`;
