@@ -42,9 +42,12 @@ async function fetchRoute(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      (errorData as { error?: string }).error || `Route API error: ${response.status} ${response.statusText}`,
-    );
+    const errorMsg = (errorData as { error?: string }).error || `Route API error: ${response.status} ${response.statusText}`;
+    // Propagate 429 status so callers can show quota-friendly messaging
+    if (response.status === 429) {
+      throw new Error('429: Servicio de rutas temporalmente no disponible. Prueba de nuevo más tarde.');
+    }
+    throw new Error(errorMsg);
   }
 
   const data = await response.json();
