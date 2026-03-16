@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'BiciCoruña — Smart Bike Route Planner',
@@ -37,6 +38,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         runtimeCaching: [
           {
             // Network-first for API calls
@@ -79,18 +83,9 @@ export default defineConfig({
               },
             },
           },
-          {
-            // Cache-first for static assets (JS, CSS, images)
-            urlPattern: /\.(?:js|css|woff2?|png|jpg|jpeg|svg|gif|ico)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'static-assets',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-              },
-            },
-          },
+          // Static assets (JS, CSS) intentionally NOT cached at runtime.
+          // Vite content-hashes all bundles and VitePWA precaches them.
+          // A CacheFirst runtime rule was serving stale builds for 30 days.
         ],
       },
     }),
