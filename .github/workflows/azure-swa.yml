@@ -36,8 +36,6 @@ jobs:
 
       - name: Build app
         run: npm run build
-        env:
-          VITE_ORS_API_KEY: ${{ secrets.VITE_ORS_API_KEY }}
 
       - name: Build API
         run: cd api && npm run build
