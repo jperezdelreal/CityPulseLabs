@@ -9,13 +9,14 @@ const BIKE_TYPE_OPTIONS: { value: BikeType; label: string; icon: string; shortLa
   { value: 'any', label: 'Todas', shortLabel: 'Todas', icon: '🚲' },
   { value: 'FIT', label: 'Mecánica', shortLabel: 'Mec.', icon: '🔧' },
   { value: 'EFIT', label: 'Eléctrica', shortLabel: 'Eléc.', icon: '⚡' },
-  { value: 'BOOST', label: 'Turbo', shortLabel: 'Turbo', icon: '🚀' },
+  // BOOST hidden until Turbo bikes are available in the network
+  // { value: 'BOOST', label: 'Turbo', shortLabel: 'Turbo', icon: '🚀' },
 ];
 
 export default function BikeTypeSelector({ selectedType, onTypeChange }: BikeTypeSelectorProps) {
   return (
     <div
-      className="flex gap-1 bg-white/90 backdrop-blur rounded-xl shadow-md p-1"
+      className="flex gap-1 bg-white rounded-xl shadow-sm border border-gray-200 p-1"
       role="radiogroup"
       aria-label="Tipo de bicicleta"
       data-testid="bike-type-selector"
@@ -30,20 +31,22 @@ export default function BikeTypeSelector({ selectedType, onTypeChange }: BikeTyp
             aria-label={label}
             onClick={() => onTypeChange(value)}
             className={`
-              flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium
-              transition-all cursor-pointer min-w-[44px] min-h-[44px] justify-center
+              flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium
+              transition-all cursor-pointer min-h-[36px]
               ${
                 isSelected
-                  ? 'bg-primary-600 text-white shadow-sm scale-[1.02]'
-                  : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
               }
             `}
             data-testid={`bike-type-${value}`}
           >
-            <span className="text-base sm:text-lg">{icon}</span>
-            <span className="text-[10px] sm:text-xs leading-tight">
-              <span className="hidden sm:inline">{label}</span>
-              <span className="sm:hidden">{shortLabel}</span>
+            <span className="text-sm">{icon}</span>
+            <span className={`text-xs leading-tight hidden sm:inline ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+              {label}
+            </span>
+            <span className={`text-xs leading-tight sm:hidden ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+              {shortLabel}
             </span>
           </button>
         );

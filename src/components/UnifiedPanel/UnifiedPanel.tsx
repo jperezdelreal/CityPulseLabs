@@ -225,126 +225,24 @@ export default function UnifiedPanel({
 
   return (
     <>
-      {/* === MOBILE BOTTOM SHEET === */}
-      <div
-        ref={containerRef}
-        className={`
-          lg:hidden fixed left-0 right-0 z-[45]
-          bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.12)]
-          transition-all duration-300 ease-out
-          ${isCollapsed ? 'bottom-0' : 'bottom-0'}
-        `}
-        style={{
-          maxHeight: isCollapsed ? '76px' : '75vh',
-        }}
-        data-testid="unified-panel-mobile"
+      {/* === DESKTOP SIDE PANEL === */}
+      <aside
+        className={`flex flex-col w-[360px] xl:w-[400px] border-l border-gray-200 bg-white overflow-hidden transition-all ${isCollapsed ? 'max-h-[56px] md:max-h-none' : ''}`}
+        data-testid="unified-panel-desktop"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
-        <div
-          className="flex justify-center pt-3 pb-1.5 cursor-grab active:cursor-grabbing touch-none"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          aria-hidden="true"
-        >
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        {/* Collapsed search preview */}
+        {/* Collapsed tap-to-expand handle (mobile) */}
         {isCollapsed && (
           <button
+            className="md:hidden flex items-center justify-center w-full py-3 text-sm text-gray-500 bg-gray-50 border-b border-gray-100"
             onClick={handleExpandCollapsed}
-            className="w-full flex items-center gap-3 px-4 pb-3 text-left"
-            aria-label="Abrir buscador de direcciones"
+            data-testid="expand-panel-button"
           >
-            <div className="flex-1 flex items-center gap-2.5 bg-gray-100 px-4 py-2.5 rounded-xl min-h-[44px]">
-              <span className="text-gray-400 text-base">🔍</span>
-              <span className="text-sm text-gray-500 truncate">¿A dónde quieres ir?</span>
-            </div>
+            <span className="w-10 h-1 rounded-full bg-gray-300" />
           </button>
         )}
 
-        {/* Expanded content */}
-        {!isCollapsed && (
-          <div className="flex flex-col" style={{ maxHeight: 'calc(75vh - 28px)' }}>
-            {/* Search section (pinned) */}
-            <div className="shrink-0 px-4 pb-2">
-              <SearchFields
-                originText={originText}
-                destText={destText}
-                activeField={activeField}
-                onOriginChange={handleOriginChange}
-                onDestChange={handleDestChange}
-                onSetActiveField={setActiveField}
-                onClearAll={handleClearAll}
-                showClear={!!(origin || destination)}
-              />
-
-              {/* Autocomplete dropdown */}
-              {activeField && (activeResults.results.length > 0 || activeResults.loading) && (
-                <AutocompleteDropdown
-                  results={activeResults.results}
-                  loading={activeResults.loading}
-                  onSelect={(result) => handleSelectResult(result, activeField)}
-                />
-              )}
-
-              {/* Geocoding error */}
-              {activeField && activeResults.error && (
-                <div className="mt-2 bg-red-50 text-red-700 text-sm px-3 py-2.5 rounded-xl border border-red-100">
-                  ⚠️ {activeResults.error}
-                </div>
-              )}
-            </div>
-
-            {/* Scrollable content section */}
-            <div className="flex-1 overflow-y-auto overscroll-contain border-t border-gray-100">
-              {/* Route loading skeleton */}
-              {routeLoading && <RouteSkeleton />}
-
-              {/* Route error with retry */}
-              {routeError && !routeLoading && (
-                <RouteErrorState error={routeError} onRetry={onRetryRoutes} />
-              )}
-
-              {/* Route results */}
-              {!routeLoading && !routeError && (
-                <RoutePanel
-                  routes={routes}
-                  walkingRoute={walkingRoute}
-                  stations={stations}
-                  loading={false}
-                  error={null}
-                  selectedIndex={selectedRouteIndex}
-                  onSelectRoute={onSelectRoute}
-                  onHoverRoute={onHoverRoute}
-                  bikeType={bikeType}
-                  stationCount={stations.length}
-                />
-              )}
-
-              {/* Station info */}
-              {selectedStation && (
-                <div className="border-t border-gray-100">
-                  <StationPanel
-                    station={selectedStation}
-                    loading={stationsLoading}
-                    error={stationsError}
-                    lastUpdated={lastUpdated}
-                    onClose={onCloseStation}
-                    preferredBikeType={bikeType}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* === DESKTOP SIDE PANEL === */}
-      <aside
-        className="hidden lg:flex lg:flex-col lg:w-[360px] xl:w-[400px] lg:border-l lg:border-gray-200 bg-white overflow-hidden"
-        data-testid="unified-panel-desktop"
-      >
         {/* Search section (pinned at top) */}
         <div className="shrink-0 px-4 pt-4 pb-2 border-b border-gray-100">
           <SearchFields

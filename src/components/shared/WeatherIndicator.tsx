@@ -13,7 +13,7 @@ export default function WeatherIndicator({
 }: WeatherIndicatorProps) {
   if (loading) {
     return (
-      <span className="text-[10px] sm:text-xs opacity-75 flex items-center gap-1">
+      <span className="text-xs text-gray-500 flex items-center gap-1">
         <span className="animate-pulse">🌤️</span> Cargando clima…
       </span>
     );
@@ -29,7 +29,7 @@ export default function WeatherIndicator({
 
     return (
       <span
-        className="text-[10px] sm:text-xs font-medium bg-amber-400/20 text-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1"
+        className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1"
         role="status"
         data-testid="weather-indicator"
       >
@@ -40,7 +40,7 @@ export default function WeatherIndicator({
 
   return (
     <span
-      className="text-[10px] sm:text-xs opacity-75 flex items-center gap-1"
+      className="text-xs text-gray-500 flex items-center gap-1"
       role="status"
       data-testid="weather-indicator"
     >
