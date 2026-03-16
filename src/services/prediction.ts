@@ -12,13 +12,16 @@ const PREDICT_API_URL = '/api/predict';
 
 /**
  * Fetch availability prediction for a station from the prediction API.
+ * Uses fetchWithRetry for resilience on mobile networks.
  */
 export async function fetchPrediction(
   stationId: string,
   horizonMinutes: number = 30,
 ): Promise<PredictionResult> {
   const url = `${PREDICT_API_URL}?station=${encodeURIComponent(stationId)}&horizon=${horizonMinutes}`;
-  const res = await fetch(url);
+
+  const { fetchWithRetry } = await import('../utils/retry.ts');
+  const res = await fetchWithRetry(url, undefined, { timeoutMs: 8_000 });
 
   if (!res.ok) {
     throw new Error(`Prediction API error: ${res.status}`);

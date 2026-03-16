@@ -13,9 +13,13 @@ const FORECAST_SLOT_MINUTES = 15;
  * Fetch precipitation probability for A Coruña from the weather API proxy.
  * Returns the max probability in the next ~30 min window and estimated
  * minutes until rain exceeds the threshold.
+ * Uses shorter timeout for non-critical weather data — graceful degradation on failure.
  */
 export async function fetchWeather(): Promise<WeatherData> {
-  const res = await fetchWithRetry(WEATHER_API_URL);
+  const res = await fetchWithRetry(WEATHER_API_URL, undefined, {
+    timeoutMs: 6_000,
+    maxRetries: 1,
+  });
   if (!res.ok) {
     throw new Error(`Weather API error: ${res.status}`);
   }

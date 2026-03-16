@@ -30,6 +30,7 @@ async function fetchRoute(
   profile: ORSProfile,
   from: LatLng,
   to: LatLng,
+  signal?: AbortSignal,
 ): Promise<RouteSegment> {
   const apiKey = getApiKey();
 
@@ -53,7 +54,7 @@ async function fetchRoute(
         [to.lng, to.lat],
       ],
     }),
-  });
+  }, { signal });
 
   if (!response.ok) {
     throw new Error(`ORS API error: ${response.status} ${response.statusText}`);
@@ -82,14 +83,16 @@ async function fetchRoute(
 export async function getWalkingRoute(
   from: LatLng,
   to: LatLng,
+  signal?: AbortSignal,
 ): Promise<RouteSegment> {
-  return fetchRoute('foot-walking', from, to);
+  return fetchRoute('foot-walking', from, to, signal);
 }
 
 /** Get a cycling route between two points */
 export async function getCyclingRoute(
   from: LatLng,
   to: LatLng,
+  signal?: AbortSignal,
 ): Promise<RouteSegment> {
-  return fetchRoute('cycling-regular', from, to);
+  return fetchRoute('cycling-regular', from, to, signal);
 }

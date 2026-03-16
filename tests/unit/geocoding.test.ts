@@ -84,7 +84,10 @@ describe('geocoding service', () => {
     await searchAddress('test', controller.signal);
 
     const [, options] = vi.mocked(fetch).mock.calls[0];
-    expect((options as RequestInit).signal).toBe(controller.signal);
+    // fetchWithRetry wraps the external signal in its own controller;
+    // verify a signal is present (abort linkage is tested in retry.test.ts)
+    expect((options as RequestInit).signal).toBeDefined();
+    expect((options as RequestInit).signal).toBeInstanceOf(AbortSignal);
   });
 });
 
