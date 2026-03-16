@@ -1,8 +1,6 @@
 import type { LatLng, RouteSegment } from '../types/index.ts';
 import { fetchWithRetry } from '../utils/retry.ts';
 
-const ORS_BASE_URL = 'https://api.openrouteservice.org/v2/directions';
-
 type ORSProfile = 'foot-walking' | 'cycling-regular';
 
 /** Calculate distance between two points using Haversine formula */
@@ -20,35 +18,21 @@ export function haversineDistance(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function getApiKey(): string {
-  return (
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ORS_API_KEY) || ''
-  );
-}
-
+/**
+ * Fetch a route via our Azure Function proxy at /api/routes.
+ * This avoids CORS, hides the API key server-side, and enables server-side caching.
+ */
 async function fetchRoute(
   profile: ORSProfile,
   from: LatLng,
   to: LatLng,
   signal?: AbortSignal,
 ): Promise<RouteSegment> {
-  const apiKey = getApiKey();
-
-  if (!apiKey) {
-    throw new Error(
-      'ORS API key not configured. Set the VITE_ORS_API_KEY environment variable to enable routing.',
-    );
-  }
-
-  // ORS v2 POST requires [lng, lat] coordinate order
-  const url = `${ORS_BASE_URL}/${profile}/geojson`;
-  const response = await fetchWithRetry(url, {
+  const response = await fetchWithRetry('/api/routes', {
     method: 'POST',
-    headers: {
-      'Authorization': apiKey,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      profile,
       coordinates: [
         [from.lng, from.lat],
         [to.lng, to.lat],
@@ -57,7 +41,10 @@ async function fetchRoute(
   }, { signal });
 
   if (!response.ok) {
-    throw new Error(`ORS API error: ${response.status} ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      (errorData as { error?: string }).error || `Route API error: ${response.status} ${response.statusText}`,
+    );
   }
 
   const data = await response.json();
