@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import MapView from './components/Map/MapView.tsx';
 import StationPanel from './components/StationPanel/StationPanel.tsx';
 import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
+import SearchBar from './components/SearchBar/SearchBar.tsx';
 import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
 import OfflineIndicator from './components/shared/OfflineIndicator.tsx';
 import { useStations } from './hooks/useStations.ts';
@@ -58,6 +59,13 @@ function App() {
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
             preferredBikeType={bikeType}
+          />
+          <SearchBar
+            origin={origin}
+            destination={destination}
+            onSetOrigin={setOrigin}
+            onSetDestination={setDestination}
+            onClearRoute={handleClearRoute}
           />
         </main>
 
