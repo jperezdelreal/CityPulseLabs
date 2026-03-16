@@ -42,8 +42,11 @@ export default function BikeTypeSelector({ selectedType, onTypeChange }: BikeTyp
             data-testid={`bike-type-${value}`}
           >
             <span className="text-sm">{icon}</span>
-            <span className={`text-xs leading-tight ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+            <span className={`text-xs leading-tight hidden sm:inline ${isSelected ? 'text-white' : 'text-gray-700'}`}>
               {label}
+            </span>
+            <span className={`text-xs leading-tight sm:hidden ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+              {shortLabel}
             </span>
           </button>
         );

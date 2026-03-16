@@ -227,9 +227,22 @@ export default function UnifiedPanel({
     <>
       {/* === DESKTOP SIDE PANEL === */}
       <aside
-        className="flex flex-col w-[360px] xl:w-[400px] border-l border-gray-200 bg-white overflow-hidden"
+        className={`flex flex-col w-[360px] xl:w-[400px] border-l border-gray-200 bg-white overflow-hidden transition-all ${isCollapsed ? 'max-h-[56px] md:max-h-none' : ''}`}
         data-testid="unified-panel-desktop"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
+        {/* Collapsed tap-to-expand handle (mobile) */}
+        {isCollapsed && (
+          <button
+            className="md:hidden flex items-center justify-center w-full py-3 text-sm text-gray-500 bg-gray-50 border-b border-gray-100"
+            onClick={handleExpandCollapsed}
+            data-testid="expand-panel-button"
+          >
+            <span className="w-10 h-1 rounded-full bg-gray-300" />
+          </button>
+        )}
+
         {/* Search section (pinned at top) */}
         <div className="shrink-0 px-4 pt-4 pb-2 border-b border-gray-100">
           <SearchFields
