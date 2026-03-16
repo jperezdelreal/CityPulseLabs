@@ -3,6 +3,8 @@
  * Free, no API key required. Rate-limited — use with debounce.
  */
 
+import { fetchWithRetry } from '../utils/retry.ts';
+
 export interface GeocodingResult {
   display_name: string;
   lat: number;
@@ -33,10 +35,9 @@ export async function searchAddress(query: string, signal?: AbortSignal): Promis
     bounded: '1',
   });
 
-  const response = await fetch(`${NOMINATIM_BASE}?${params}`, {
+  const response = await fetchWithRetry(`${NOMINATIM_BASE}?${params}`, {
     headers: { 'User-Agent': USER_AGENT },
-    signal,
-  });
+  }, { signal, timeoutMs: 8_000 });
 
   if (!response.ok) {
     throw new Error(`Geocoding error: ${response.status}`);

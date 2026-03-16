@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { LatLng, MultiModalRoute, WalkingRoute } from '../types/index.ts';
 import type { StationData } from '../types/gbfs.ts';
 import type { BikeType } from '../services/bikeTypeFilter.ts';
 import { calculateMultiModalRoutes, calculateWalkingOnly } from '../services/routeEngine.ts';
+import { getCachedRoutes, setCachedRoutes } from '../utils/routeCache.ts';
 
 interface UseRoutesResult {
   routes: MultiModalRoute[];
@@ -27,38 +28,55 @@ export function useRoutes(
   const [retryCount, setRetryCount] = useState(0);
 
   const hasEndpoints = origin !== null && destination !== null;
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!origin || !destination) return;
 
-    let cancelled = false;
+    // Abort any in-flight request from a previous render
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // Check cache first
+    const cached = getCachedRoutes(origin, destination, bikeType);
+    if (cached) {
+      setResult({
+        routes: cached.routes,
+        walkingRoute: cached.walkingRoute,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
     setResult((prev) => ({ ...prev, loading: true, error: null }));
 
     async function fetchRoutes() {
       try {
         const [multiModal, walking] = await Promise.all([
-          calculateMultiModalRoutes(origin!, destination!, stations, bikeType),
-          calculateWalkingOnly(origin!, destination!),
+          calculateMultiModalRoutes(origin!, destination!, stations, bikeType, controller.signal),
+          calculateWalkingOnly(origin!, destination!, controller.signal),
         ]);
 
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
+          setCachedRoutes(origin!, destination!, bikeType, multiModal, walking);
           setResult({ routes: multiModal, walkingRoute: walking, loading: false, error: null });
         }
       } catch (err: unknown) {
-        if (!cancelled) {
-          setResult((prev) => ({
-            ...prev,
-            error: err instanceof Error ? err.message : 'Failed to calculate routes',
-            loading: false,
-          }));
-        }
+        if (controller.signal.aborted) return;
+        setResult((prev) => ({
+          ...prev,
+          error: err instanceof Error ? err.message : 'Failed to calculate routes',
+          loading: false,
+        }));
       }
     }
 
     fetchRoutes();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [origin, destination, stations, bikeType, retryCount]);
 

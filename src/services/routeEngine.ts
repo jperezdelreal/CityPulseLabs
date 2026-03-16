@@ -7,6 +7,8 @@ const MAX_WALKING_DISTANCE_M = 1000;
 const TOP_N = 3;
 // Limit candidate pairs to avoid excessive API calls
 const MAX_CANDIDATES = 6;
+// Process route pairs in parallel batches to avoid ORS rate limiting
+const BATCH_SIZE = 3;
 // EFIT bonus: extra score points when preferred EFIT is available
 const EFIT_BONUS_SECONDS = -120;
 
@@ -86,6 +88,7 @@ export async function calculateMultiModalRoutes(
   destination: LatLng,
   stations: StationData[],
   bikeType: BikeType = 'any',
+  signal?: AbortSignal,
 ): Promise<MultiModalRoute[]> {
   const pickups = filterPickupStations(stations, origin, MAX_WALKING_DISTANCE_M, bikeType).slice(0, MAX_CANDIDATES);
   const dropoffs = filterDropoffStations(stations, destination).slice(0, MAX_CANDIDATES);
@@ -119,44 +122,54 @@ export async function calculateMultiModalRoutes(
   type ScoredRoute = MultiModalRoute & { _scoring_time: number };
   const routes: ScoredRoute[] = [];
 
-  for (const { pickup, dropoff } of sortedPairs) {
-    try {
-      const pickupLatLng: LatLng = { lat: pickup.lat, lng: pickup.lon };
-      const dropoffLatLng: LatLng = { lat: dropoff.lat, lng: dropoff.lon };
+  // Process pairs in parallel batches to reduce total wait time on mobile
+  for (let i = 0; i < sortedPairs.length; i += BATCH_SIZE) {
+    if (signal?.aborted) break;
 
-      const [walkToPickup, bikeSegment, walkToDest] = await Promise.all([
-        getWalkingRoute(origin, pickupLatLng),
-        getCyclingRoute(pickupLatLng, dropoffLatLng),
-        getWalkingRoute(dropoffLatLng, destination),
-      ]);
+    const batch = sortedPairs.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async ({ pickup, dropoff }) => {
+        try {
+          const pickupLatLng: LatLng = { lat: pickup.lat, lng: pickup.lon };
+          const dropoffLatLng: LatLng = { lat: dropoff.lat, lng: dropoff.lon };
 
-      const walkTime = walkToPickup.duration_seconds + walkToDest.duration_seconds;
-      const rawBikeTime = bikeSegment.duration_seconds;
-      const speedFactor = BIKE_TYPE_SPEED_FACTOR[bikeType] ?? 1;
-      const bikeTime = Math.round(rawBikeTime * speedFactor);
+          const [walkToPickup, bikeSegment, walkToDest] = await Promise.all([
+            getWalkingRoute(origin, pickupLatLng, signal),
+            getCyclingRoute(pickupLatLng, dropoffLatLng, signal),
+            getWalkingRoute(dropoffLatLng, destination, signal),
+          ]);
 
-      // Bonus for EFIT preference when EFIT bikes are available at station
-      const efitBonus =
-        bikeType === 'EFIT' && getVehicleTypeCount(pickup, 'EFIT') > 0
-          ? EFIT_BONUS_SECONDS
-          : 0;
+          const walkTime = walkToPickup.duration_seconds + walkToDest.duration_seconds;
+          const rawBikeTime = bikeSegment.duration_seconds;
+          const speedFactor = BIKE_TYPE_SPEED_FACTOR[bikeType] ?? 1;
+          const bikeTime = Math.round(rawBikeTime * speedFactor);
 
-      routes.push({
-        pickup_station: toStationSummary(pickup),
-        dropoff_station: toStationSummary(dropoff),
-        walk_to_pickup: walkToPickup,
-        bike_segment: bikeSegment,
-        walk_to_destination: walkToDest,
-        total_time_seconds: walkTime + bikeTime,
-        walk_time_seconds: walkTime,
-        bike_time_seconds: bikeTime,
-        walk_distance_meters: walkToPickup.distance_meters + walkToDest.distance_meters,
-        bike_distance_meters: bikeSegment.distance_meters,
-        _scoring_time: walkTime + bikeTime + efitBonus,
-      });
-    } catch {
-      // Skip failed route calculations
-      continue;
+          const efitBonus =
+            bikeType === 'EFIT' && getVehicleTypeCount(pickup, 'EFIT') > 0
+              ? EFIT_BONUS_SECONDS
+              : 0;
+
+          return {
+            pickup_station: toStationSummary(pickup),
+            dropoff_station: toStationSummary(dropoff),
+            walk_to_pickup: walkToPickup,
+            bike_segment: bikeSegment,
+            walk_to_destination: walkToDest,
+            total_time_seconds: walkTime + bikeTime,
+            walk_time_seconds: walkTime,
+            bike_time_seconds: bikeTime,
+            walk_distance_meters: walkToPickup.distance_meters + walkToDest.distance_meters,
+            bike_distance_meters: bikeSegment.distance_meters,
+            _scoring_time: walkTime + bikeTime + efitBonus,
+          } as ScoredRoute;
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    for (const result of results) {
+      if (result) routes.push(result);
     }
   }
 
@@ -171,8 +184,9 @@ export async function calculateMultiModalRoutes(
 export async function calculateWalkingOnly(
   origin: LatLng,
   destination: LatLng,
+  signal?: AbortSignal,
 ): Promise<WalkingRoute> {
-  const segment = await getWalkingRoute(origin, destination);
+  const segment = await getWalkingRoute(origin, destination, signal);
   return {
     segment,
     total_time_seconds: segment.duration_seconds,
