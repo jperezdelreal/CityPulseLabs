@@ -203,12 +203,7 @@ function App() {
           onCloseStation={() => setSelectedStation(null)}
         />
 
-        {/* Bike type selector — floating pill on mobile */}
-        <div className="absolute top-20 right-3 z-[35]">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-1">
-            <BikeTypeSelector selectedType={bikeType} onTypeChange={setBikeType} />
-          </div>
-        </div>
+        {/* BikeTypeSelector hidden on mobile — not useful on small screens */}
       </div>
     );
   }
