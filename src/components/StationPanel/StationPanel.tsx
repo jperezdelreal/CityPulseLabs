@@ -131,7 +131,8 @@ export default function StationPanel({
         {/* Vehicle types */}
         {hasVehicleTypes && (
           <div className="grid grid-cols-3 gap-2" data-testid="vehicle-type-breakdown">
-            {station.vehicle_types_available.map((vt) => {
+            {/* BOOST hidden until Turbo bikes are available in the network */}
+            {station.vehicle_types_available.filter((vt) => vt.vehicle_type_id !== 'BOOST').map((vt) => {
               const isPreferred =
                 preferredBikeType !== 'any' && vt.vehicle_type_id === preferredBikeType;
               const icon = getVehicleTypeIcon(vt.vehicle_type_id);

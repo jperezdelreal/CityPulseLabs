@@ -27,7 +27,8 @@ export const BIKE_TYPE_SPEED_FACTOR: Record<BikeType, number> = {
   any: 1,
   FIT: 1,
   EFIT: 0.8,
-  BOOST: 0.85,
+  // BOOST hidden from UI until Turbo bikes are available; kept here for type completeness
+  BOOST: 1,
 };
 
 /** Human-readable label for bike type advantage */
@@ -35,8 +36,9 @@ export function getBikeTypeLabel(bikeType: BikeType): string | null {
   switch (bikeType) {
     case 'EFIT':
       return '\u26A1 El\u00E9ctrica \u2014 20% m\u00E1s r\u00E1pido en cuestas';
-    case 'BOOST':
-      return '\u{1F680} Turbo \u2014 15% m\u00E1s r\u00E1pido en cuestas';
+    // BOOST hidden until Turbo bikes are available in the network
+    // case 'BOOST':
+    //   return '\u{1F680} Turbo \u2014 15% m\u00E1s r\u00E1pido en cuestas';
     default:
       return null;
   }

@@ -54,7 +54,8 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
 
           {hasVehicleTypes && (
             <div className="pt-1.5 border-t border-gray-200 space-y-1">
-              {station.vehicle_types_available.map((vt) => {
+              {/* BOOST hidden until Turbo bikes are available in the network */}
+              {station.vehicle_types_available.filter((vt) => vt.vehicle_type_id !== 'BOOST').map((vt) => {
                 const meta = VEHICLE_TYPE_LABELS[vt.vehicle_type_id];
                 if (!meta) return null;
                 const isPreferred =
