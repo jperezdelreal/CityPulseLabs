@@ -81,8 +81,23 @@ body {
 
 /* === Bottom sheet overscroll containment === */
 @media (max-width: 1023px) {
-  [data-testid="unified-panel-mobile"] {
+  [data-testid="unified-panel-mobile"],
+  [data-testid="mobile-route-panel"] {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* === Mobile safe area (notch/status bar) === */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* === Mobile search bar scrolling === */
+.mobile-search-bar {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-search-bar input {
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
