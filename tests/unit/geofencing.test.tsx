@@ -251,14 +251,14 @@ describe('GeofencingOverlay', () => {
     expect(screen.getByTestId('geojson-layer')).toBeInTheDocument();
   });
 
-  it('shows "no zones available" when collection is empty', () => {
-    render(<GeofencingOverlay zones={emptyCollection} loading={false} />);
-    expect(screen.getByText(/no hay zonas de geofencing disponibles/i)).toBeInTheDocument();
+  it('renders nothing when collection is empty', () => {
+    const { container } = render(<GeofencingOverlay zones={emptyCollection} loading={false} />);
+    expect(container.innerHTML).toBe('');
   });
 
-  it('shows "no zones available" when zones is null', () => {
-    render(<GeofencingOverlay zones={null} loading={false} />);
-    expect(screen.getByText(/no hay zonas de geofencing disponibles/i)).toBeInTheDocument();
+  it('renders nothing when zones is null', () => {
+    const { container } = render(<GeofencingOverlay zones={null} loading={false} />);
+    expect(container.innerHTML).toBe('');
   });
 
   it('renders nothing when loading', () => {

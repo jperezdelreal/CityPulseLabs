@@ -24,6 +24,9 @@ export default function GeofencingOverlay({
 
   const hasZones = zones && parseGeofencingFeatures(zones).length > 0;
 
+  // When no zones are available, render nothing — it's not an error
+  if (!hasZones) return null;
+
   return (
     <>
       {/* Toggle control */}
@@ -43,7 +46,7 @@ export default function GeofencingOverlay({
       </div>
 
       {/* Zones layer */}
-      {visible && hasZones && (
+      {visible && (
         <GeoJSON
           key={JSON.stringify(zones)}
           data={zones!}
@@ -61,13 +64,6 @@ export default function GeofencingOverlay({
             });
           }}
         />
-      )}
-
-      {/* No zones message */}
-      {visible && !hasZones && !loading && (
-        <div className="absolute bottom-36 left-3 z-[1000] bg-white/90 px-3 py-2 rounded-lg shadow-md text-xs text-gray-500 max-w-48">
-          No hay zonas de geofencing disponibles para este sistema
-        </div>
       )}
     </>
   );
