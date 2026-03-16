@@ -75,7 +75,7 @@ function GeolocationButtonInner({
   };
 
   return (
-    <div className="absolute bottom-24 sm:bottom-6 right-3 z-[1000] flex flex-col items-end gap-2 max-w-[220px]">
+    <div className="absolute bottom-32 sm:bottom-6 right-3 z-50 flex flex-col items-end gap-2 max-w-[220px]">
       <button
         onClick={handleClick}
         disabled={loading}
