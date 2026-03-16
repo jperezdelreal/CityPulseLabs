@@ -22,7 +22,10 @@ interface MapViewProps {
   lastUpdated: Date | null;
   origin: LatLng | null;
   destination: LatLng | null;
-  selectedRoute: MultiModalRoute | null;
+  routes: MultiModalRoute[];
+  selectedRouteIndex: number;
+  onSelectRoute: (index: number) => void;
+  hoveredRouteIndex?: number | null;
   onSetOrigin: (point: LatLng) => void;
   onSetDestination: (point: LatLng) => void;
   onClearRoute: () => void;
@@ -44,7 +47,10 @@ export default function MapView({
   lastUpdated,
   origin,
   destination,
-  selectedRoute,
+  routes,
+  selectedRouteIndex,
+  onSelectRoute,
+  hoveredRouteIndex = null,
   onSetOrigin,
   onSetDestination,
   onClearRoute,
@@ -88,7 +94,14 @@ export default function MapView({
           onSetDestination={onSetDestination}
           onClear={onClearRoute}
         />
-        <RouteDisplay route={selectedRoute} />
+        <RouteDisplay
+          routes={routes}
+          selectedIndex={selectedRouteIndex}
+          onSelectRoute={onSelectRoute}
+          origin={origin}
+          destination={destination}
+          hoveredIndex={hoveredRouteIndex}
+        />
         {geoPosition && (
           <UserLocationMarker position={geoPosition} accuracy={geoAccuracy} />
         )}

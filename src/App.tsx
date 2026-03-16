@@ -22,6 +22,7 @@ function App() {
   const [origin, setOrigin] = useState<LatLng | null>(null);
   const [destination, setDestination] = useState<LatLng | null>(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [hoveredRouteIndex, setHoveredRouteIndex] = useState<number | null>(null);
   const [bikeType, setBikeType] = useState<BikeType>('any');
 
   const geo = useGeolocation();
@@ -43,9 +44,9 @@ function App() {
     setOrigin(null);
     setDestination(null);
     setSelectedRouteIndex(0);
+    setHoveredRouteIndex(null);
   }, []);
 
-  const selectedRoute = routes[selectedRouteIndex] ?? null;
   const hasActiveContent = !!(selectedStation || origin || destination);
 
   return (
@@ -82,7 +83,10 @@ function App() {
             lastUpdated={lastUpdated}
             origin={origin}
             destination={destination}
-            selectedRoute={selectedRoute}
+            routes={routes}
+            selectedRouteIndex={selectedRouteIndex}
+            onSelectRoute={setSelectedRouteIndex}
+            hoveredRouteIndex={hoveredRouteIndex}
             onSetOrigin={setOrigin}
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
@@ -149,6 +153,8 @@ function App() {
             error={routeError}
             selectedIndex={selectedRouteIndex}
             onSelectRoute={setSelectedRouteIndex}
+            onHoverRoute={setHoveredRouteIndex}
+            stationCount={stations.length}
           />
           <StationPanel
             station={selectedStation}
