@@ -155,7 +155,7 @@ function App() {
         </main>
 
         {/* Search bar — floating at top over map */}
-        <div className="absolute top-0 left-0 right-0 z-[40] pt-2 safe-area-top">
+        <div className="absolute top-0 left-0 right-0 z-[40] pt-4 safe-area-top">
           <MobileSearchBar
             originText={originText}
             destText={destText}
