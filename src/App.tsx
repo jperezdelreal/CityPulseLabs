@@ -5,10 +5,15 @@ import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
 import SearchBar from './components/SearchBar/SearchBar.tsx';
 import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
 import OfflineIndicator from './components/shared/OfflineIndicator.tsx';
+import RainWarning from './components/shared/RainWarning.tsx';
+import WeatherIndicator from './components/shared/WeatherIndicator.tsx';
 import WelcomeCTA from './components/shared/WelcomeCTA.tsx';
 import { useStations } from './hooks/useStations.ts';
 import { useRoutes } from './hooks/useRoutes.ts';
+import { useGeolocation } from './hooks/useGeolocation.ts';
+import { useWeather } from './hooks/useWeather.ts';
 import { type BikeType, filterByBikeType } from './services/bikeTypeFilter.ts';
+import { findNearestStation } from './utils/nearestStation.ts';
 import type { StationData, LatLng } from './types/index.ts';
 
 function App() {
@@ -18,6 +23,14 @@ function App() {
   const [destination, setDestination] = useState<LatLng | null>(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [bikeType, setBikeType] = useState<BikeType>('any');
+
+  const geo = useGeolocation();
+  const weather = useWeather();
+
+  const nearestStation = useMemo(
+    () => (geo.position ? findNearestStation(geo.position, stations) : null),
+    [geo.position, stations],
+  );
 
   const filteredStations = useMemo(
     () => filterByBikeType(stations, bikeType),
@@ -38,12 +51,20 @@ function App() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <OfflineIndicator lastUpdated={lastUpdated} />
+      <RainWarning
+        precipitationProbability={weather.precipitationProbability}
+        minutesUntilRain={weather.minutesUntilRain}
+      />
       <header className="bg-gradient-to-r from-primary-700 to-primary-600 text-white px-3 sm:px-4 py-2.5 flex items-center gap-3 shrink-0 min-h-[52px] shadow-md">
         <div className="flex items-center gap-2">
           <span className="text-xl sm:text-2xl" aria-hidden="true">🚲</span>
           <div className="flex flex-col leading-tight">
             <span className="text-base sm:text-lg font-bold tracking-tight whitespace-nowrap">BiciCoruña</span>
-            <span className="text-[10px] sm:text-xs opacity-75 hidden sm:block">Planificador inteligente de rutas</span>
+            <WeatherIndicator
+              precipitationProbability={weather.precipitationProbability}
+              minutesUntilRain={weather.minutesUntilRain}
+              loading={weather.loading}
+            />
           </div>
         </div>
         <div className="ml-auto shrink-0">
@@ -66,6 +87,14 @@ function App() {
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
             preferredBikeType={bikeType}
+            geoPosition={geo.position}
+            geoAccuracy={geo.accuracy}
+            geoLoading={geo.loading}
+            geoError={geo.error}
+            geoSupported={geo.supported}
+            geoPermissionDenied={geo.permissionDenied}
+            nearestStation={nearestStation}
+            onRequestPosition={geo.requestPosition}
           />
           <SearchBar
             origin={origin}

@@ -105,6 +105,12 @@ function GeolocationButtonInner({
         </div>
       )}
 
+      {permissionDenied && (
+        <div className="bg-amber-50 text-amber-700 text-xs px-3 py-2.5 rounded-xl shadow border border-amber-200">
+          🔒 Activa la ubicación en tu navegador
+        </div>
+      )}
+
       {position && nearestStation && (
         <NearestStationInfo
           nearest={nearestStation}
