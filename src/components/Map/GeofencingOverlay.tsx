@@ -30,18 +30,18 @@ export default function GeofencingOverlay({
   return (
     <>
       {/* Toggle control */}
-      <div className="absolute bottom-24 left-3 z-[1000]">
+      <div className="absolute bottom-6 left-3 z-[1000]">
         <button
           onClick={() => setVisible((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-md text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl shadow-lg text-xs font-medium transition-all min-h-[44px] ${
             visible
-              ? 'bg-primary-600 text-white hover:bg-primary-700'
-              : 'bg-white text-gray-600 hover:bg-gray-50'
+              ? 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800'
+              : 'bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100'
           }`}
           title="Mostrar/ocultar zonas"
         >
           <span className="text-sm">📍</span>
-          Zones
+          Zonas
         </button>
       </div>
 

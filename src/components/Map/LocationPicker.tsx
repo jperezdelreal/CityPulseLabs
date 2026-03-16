@@ -56,7 +56,7 @@ export default function LocationPicker({
   const instructionText = !origin
     ? '📍 Toca el mapa para elegir tu origen'
     : !destination
-      ? '📍 Toca de nuevo para elegir el destino'
+      ? '🏁 Toca de nuevo para elegir el destino'
       : null;
 
   return (
@@ -64,17 +64,20 @@ export default function LocationPicker({
       <MapClickHandler origin={origin} onSetOrigin={onSetOrigin} onSetDestination={onSetDestination} />
 
       {instructionText && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded-lg shadow-md text-sm font-medium">
-          {instructionText}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[999] pointer-events-none">
+          <div className="bg-gray-900/80 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium whitespace-nowrap">
+            {instructionText}
+          </div>
         </div>
       )}
 
       {(origin || destination) && (
-        <div className="absolute top-2 right-2 z-[1000]">
+        <div className="absolute top-3 right-3 z-[1000]">
           <button
             onClick={onClear}
-            className="bg-white px-3 py-1.5 rounded-lg shadow-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="bg-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-semibold text-red-600 hover:bg-red-50 hover:shadow-xl active:bg-red-100 active:scale-95 transition-all min-h-[44px] flex items-center gap-1.5"
           >
+            <span aria-hidden="true">✕</span>
             Borrar ruta
           </button>
         </div>
@@ -82,13 +85,17 @@ export default function LocationPicker({
 
       {origin && (
         <Marker position={[origin.lat, origin.lng]} icon={originIcon}>
-          <Popup>Origen</Popup>
+          <Popup>
+            <span className="font-medium">📍 Origen</span>
+          </Popup>
         </Marker>
       )}
 
       {destination && (
         <Marker position={[destination.lat, destination.lng]} icon={destinationIcon}>
-          <Popup>Destino</Popup>
+          <Popup>
+            <span className="font-medium">🏁 Destino</span>
+          </Popup>
         </Marker>
       )}
     </>

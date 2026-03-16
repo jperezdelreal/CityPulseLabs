@@ -52,8 +52,8 @@ describe('SearchBar', () => {
     const originInput = screen.getByTestId('origin-input');
     const destInput = screen.getByTestId('dest-input');
 
-    expect(originInput).toHaveAttribute('placeholder', 'Escribe una dirección en A Coruña...');
-    expect(destInput).toHaveAttribute('placeholder', 'Escribe una dirección en A Coruña...');
+    expect(originInput).toHaveAttribute('placeholder', '¿Dónde estás?');
+    expect(destInput).toHaveAttribute('placeholder', '¿A dónde vas?');
   });
 
   it('should call search when typing in origin', () => {
@@ -158,7 +158,7 @@ describe('SearchBar', () => {
     const originInput = screen.getByTestId('origin-input');
     fireEvent.focus(originInput);
 
-    expect(screen.getByText('Geocoding error: 429')).toBeInTheDocument();
+    expect(screen.getByText(/Geocoding error: 429/)).toBeInTheDocument();
   });
 
   it('should show "Mi ubicación" when origin matches geolocation', async () => {

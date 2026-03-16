@@ -32,13 +32,13 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
 
   return (
     <Popup>
-      <div className="min-w-[200px]" data-testid="station-popup">
-        <h3 className="font-semibold text-sm mb-2 text-gray-900">{station.name}</h3>
+      <div className="min-w-[220px]" data-testid="station-popup">
+        <h3 className="font-bold text-sm mb-2 text-gray-900">{station.name}</h3>
 
-        <div className="text-xs space-y-1">
+        <div className="text-xs space-y-1.5">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">🚲 Bicis</span>
-            <span className="flex items-center gap-1 font-medium">
+            <span className="flex items-center gap-1.5 font-semibold">
               {station.num_bikes_available}/{station.capacity}
               <ConfidenceBadge confidence={pickupConf} compact />
             </span>
@@ -46,14 +46,14 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
 
           <div className="flex justify-between items-center">
             <span className="text-gray-600">🅿️ Anclajes</span>
-            <span className="flex items-center gap-1 font-medium">
+            <span className="flex items-center gap-1.5 font-semibold">
               {station.num_docks_available}/{station.capacity}
               <ConfidenceBadge confidence={dropoffConf} compact />
             </span>
           </div>
 
           {hasVehicleTypes && (
-            <div className="pt-1 border-t border-gray-200 space-y-0.5">
+            <div className="pt-1.5 border-t border-gray-200 space-y-1">
               {station.vehicle_types_available.map((vt) => {
                 const meta = VEHICLE_TYPE_LABELS[vt.vehicle_type_id];
                 if (!meta) return null;
@@ -63,24 +63,24 @@ export default function StationPopup({ station, preferredBikeType = 'any' }: Sta
                   <div
                     key={vt.vehicle_type_id}
                     className={`flex justify-between items-center ${
-                      isPreferred ? 'font-semibold text-secondary-600' : 'text-gray-500'
+                      isPreferred ? 'font-bold text-primary-700' : 'text-gray-500'
                     }`}
                   >
                     <span>
                       {meta.icon} {meta.label}
                     </span>
-                    <span>{vt.count}</span>
+                    <span className="font-semibold">{vt.count}</span>
                   </div>
                 );
               })}
             </div>
           )}
 
-          <div className="pt-1 text-gray-400">
+          <div className="pt-1.5 text-gray-400">
             Actualizado {formatLastReported(station.last_reported)}
           </div>
 
-          <div className="pt-1 border-t border-gray-200">
+          <div className="pt-1.5 border-t border-gray-200">
             <PredictionBadge prediction={prediction} loading={predLoading} />
           </div>
         </div>

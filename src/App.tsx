@@ -5,6 +5,7 @@ import RoutePanel from './components/RoutePanel/RoutePanel.tsx';
 import SearchBar from './components/SearchBar/SearchBar.tsx';
 import BikeTypeSelector from './components/shared/BikeTypeSelector.tsx';
 import OfflineIndicator from './components/shared/OfflineIndicator.tsx';
+import WelcomeCTA from './components/shared/WelcomeCTA.tsx';
 import { useStations } from './hooks/useStations.ts';
 import { useRoutes } from './hooks/useRoutes.ts';
 import { type BikeType, filterByBikeType } from './services/bikeTypeFilter.ts';
@@ -32,13 +33,19 @@ function App() {
   }, []);
 
   const selectedRoute = routes[selectedRouteIndex] ?? null;
+  const hasActiveContent = !!(selectedStation || origin || destination);
 
   return (
     <div className="h-screen w-screen flex flex-col">
       <OfflineIndicator lastUpdated={lastUpdated} />
-      <header className="bg-primary-700 text-white px-3 sm:px-4 py-2 flex items-center gap-2 shrink-0 min-h-[48px]">
-        <span className="text-lg sm:text-xl font-bold whitespace-nowrap">🚲 BiciCoruña</span>
-        <span className="text-xs sm:text-sm opacity-80 hidden sm:inline truncate">Planificador inteligente de rutas en bici</span>
+      <header className="bg-gradient-to-r from-primary-700 to-primary-600 text-white px-3 sm:px-4 py-2.5 flex items-center gap-3 shrink-0 min-h-[52px] shadow-md">
+        <div className="flex items-center gap-2">
+          <span className="text-xl sm:text-2xl" aria-hidden="true">🚲</span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-base sm:text-lg font-bold tracking-tight whitespace-nowrap">BiciCoruña</span>
+            <span className="text-[10px] sm:text-xs opacity-75 hidden sm:block">Planificador inteligente de rutas</span>
+          </div>
+        </div>
         <div className="ml-auto shrink-0">
           <BikeTypeSelector selectedType={bikeType} onTypeChange={setBikeType} />
         </div>
@@ -67,25 +74,43 @@ function App() {
             onSetDestination={setDestination}
             onClearRoute={handleClearRoute}
           />
+          {!hasActiveContent && !loading && stations.length > 0 && (
+            <WelcomeCTA stationCount={stations.length} />
+          )}
         </main>
 
         {/* Sidebar — bottom sheet on mobile, side panel on desktop */}
         <aside
           className={`
-            ${selectedStation || origin || destination ? 'block' : 'hidden lg:block'}
+            ${hasActiveContent ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
+            ${hasActiveContent ? 'block' : 'hidden lg:block'}
             fixed bottom-0 left-0 right-0 lg:static
-            lg:w-80 lg:border-l lg:border-gray-200
+            lg:w-[340px] xl:w-[380px] lg:border-l lg:border-gray-200
             panel-mobile lg:panel-mobile-reset
             bg-white overflow-y-auto
             max-h-[70vh] lg:max-h-full
-            transition-transform duration-300
+            transition-all duration-300 ease-out
           `}
-          style={selectedStation || origin || destination ? { zIndex: 40 } : undefined}
+          style={hasActiveContent ? { zIndex: 40 } : undefined}
         >
           {/* Mobile drag handle */}
-          <div className="flex justify-center py-2 lg:hidden">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div className="flex justify-center pt-3 pb-2 lg:hidden" aria-hidden="true">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
           </div>
+
+          {/* Clear route button — visible when route is active */}
+          {(origin || destination) && (
+            <div className="px-4 pb-2 lg:pt-2">
+              <button
+                onClick={handleClearRoute}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 text-sm font-medium transition-colors min-h-[44px]"
+                data-testid="clear-route-panel"
+              >
+                <span aria-hidden="true">✕</span>
+                Borrar ruta
+              </button>
+            </div>
+          )}
 
           <RoutePanel
             routes={routes}

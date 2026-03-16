@@ -115,30 +115,30 @@ export default function SearchBar({
   return (
     <div
       ref={containerRef}
-      className="absolute top-2 left-2 right-14 z-[1000] max-w-md"
+      className="absolute top-3 left-3 right-16 z-[1000] max-w-md"
       data-testid="search-bar"
     >
       {/* Collapsed toggle (mobile) */}
       {isCollapsed && (
         <button
           onClick={() => setExpanded(true)}
-          className="lg:hidden flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors w-full"
+          className="lg:hidden flex items-center gap-2.5 bg-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors w-full min-h-[48px]"
           aria-label="Abrir buscador de direcciones"
         >
-          <span>🔍</span>
-          <span className="truncate">Buscar dirección...</span>
+          <span className="text-gray-400 text-lg">🔍</span>
+          <span className="truncate text-gray-500">Buscar dirección en A Coruña...</span>
         </button>
       )}
 
       {/* Expanded search fields — always visible on desktop */}
       <div className={`${isCollapsed ? 'hidden lg:block' : 'block'}`}>
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
           {/* Header row with close button on mobile */}
-          <div className="flex items-center justify-between px-3 pt-2 lg:hidden">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Buscar ruta</span>
+          <div className="flex items-center justify-between px-4 pt-3 pb-1 lg:hidden">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Buscar ruta</span>
             <button
               onClick={() => { setActiveField(null); setExpanded(false); }}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              className="text-gray-400 hover:text-gray-600 p-2 -mr-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Cerrar buscador"
             >
               ✕
@@ -146,23 +146,25 @@ export default function SearchBar({
           </div>
 
           {/* Origin field */}
-          <div className="relative px-3 pt-2">
-            <div className="flex items-center gap-2">
-              <span className="text-base shrink-0" aria-hidden="true">📍</span>
+          <div className="relative px-4 pt-2 lg:pt-3">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-center shrink-0">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-200" />
+              </div>
               <input
                 type="text"
                 value={originText}
                 onChange={(e) => handleOriginChange(e.target.value)}
                 onFocus={() => setActiveField('origin')}
-                placeholder="Escribe una dirección en A Coruña..."
-                className="flex-1 text-sm py-1.5 outline-none bg-transparent text-gray-900 placeholder-gray-400"
+                placeholder="¿Dónde estás?"
+                className="flex-1 text-sm py-2 outline-none bg-transparent text-gray-900 placeholder-gray-400 min-h-[44px]"
                 aria-label="Origen"
                 data-testid="origin-input"
               />
               {originText && (
                 <button
                   onClick={handleClearOrigin}
-                  className="text-gray-400 hover:text-gray-600 shrink-0 p-0.5"
+                  className="text-gray-400 hover:text-gray-600 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
                   aria-label="Borrar origen"
                   data-testid="clear-origin"
                 >
@@ -172,27 +174,34 @@ export default function SearchBar({
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="mx-3 border-t border-gray-200" />
+          {/* Divider with route line */}
+          <div className="flex items-center px-4">
+            <div className="w-3 flex justify-center shrink-0">
+              <div className="w-0.5 h-3 bg-gray-300" />
+            </div>
+            <div className="flex-1 ml-3 border-t border-gray-200" />
+          </div>
 
           {/* Destination field */}
-          <div className="relative px-3 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-base shrink-0" aria-hidden="true">🏁</span>
+          <div className="relative px-4 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-center shrink-0">
+                <span className="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200" />
+              </div>
               <input
                 type="text"
                 value={destText}
                 onChange={(e) => handleDestChange(e.target.value)}
                 onFocus={() => setActiveField('destination')}
-                placeholder="Escribe una dirección en A Coruña..."
-                className="flex-1 text-sm py-1.5 outline-none bg-transparent text-gray-900 placeholder-gray-400"
+                placeholder="¿A dónde vas?"
+                className="flex-1 text-sm py-2 outline-none bg-transparent text-gray-900 placeholder-gray-400 min-h-[44px]"
                 aria-label="Destino"
                 data-testid="dest-input"
               />
               {destText && (
                 <button
                   onClick={handleClearDest}
-                  className="text-gray-400 hover:text-gray-600 shrink-0 p-0.5"
+                  className="text-gray-400 hover:text-gray-600 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
                   aria-label="Borrar destino"
                   data-testid="clear-dest"
                 >
@@ -206,12 +215,12 @@ export default function SearchBar({
         {/* Autocomplete dropdown */}
         {activeField && (activeResults.results.length > 0 || activeResults.loading) && (
           <div
-            className="mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-60 overflow-y-auto"
+            className="mt-1.5 bg-white rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto border border-gray-100"
             data-testid="search-results"
           >
             {activeResults.loading && (
-              <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
-                <div className="animate-spin h-3 w-3 border-2 border-primary-500 border-t-transparent rounded-full" />
+              <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
+                <div className="animate-spin h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full" />
                 Buscando...
               </div>
             )}
@@ -219,9 +228,10 @@ export default function SearchBar({
               <button
                 key={`${result.lat}-${result.lon}-${i}`}
                 onClick={() => handleSelectResult(result, activeField)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-50 last:border-b-0 min-h-[48px] flex items-center"
                 data-testid={`search-result-${i}`}
               >
+                <span className="text-gray-400 mr-3">📍</span>
                 <span className="text-gray-900 line-clamp-2">{result.display_name}</span>
               </button>
             ))}
@@ -230,8 +240,8 @@ export default function SearchBar({
 
         {/* Error message */}
         {activeField && activeResults.error && (
-          <div className="mt-1 bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg shadow">
-            {activeResults.error}
+          <div className="mt-1.5 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl shadow border border-red-100">
+            ⚠️ {activeResults.error}
           </div>
         )}
       </div>

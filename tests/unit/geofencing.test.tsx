@@ -229,7 +229,7 @@ const { default: GeofencingOverlay } = await import(
 describe('GeofencingOverlay', () => {
   it('renders toggle button', () => {
     render(<GeofencingOverlay zones={mockCollection} loading={false} />);
-    expect(screen.getByText('Zones')).toBeInTheDocument();
+    expect(screen.getByText('Zonas')).toBeInTheDocument();
   });
 
   it('renders GeoJSON layer when zones are available and visible', () => {
@@ -239,13 +239,13 @@ describe('GeofencingOverlay', () => {
 
   it('hides GeoJSON layer after clicking toggle', () => {
     render(<GeofencingOverlay zones={mockCollection} loading={false} />);
-    fireEvent.click(screen.getByText('Zones'));
+    fireEvent.click(screen.getByText('Zonas'));
     expect(screen.queryByTestId('geojson-layer')).not.toBeInTheDocument();
   });
 
   it('shows re-enabled GeoJSON layer after toggling twice', () => {
     render(<GeofencingOverlay zones={mockCollection} loading={false} />);
-    const button = screen.getByText('Zones');
+    const button = screen.getByText('Zonas');
     fireEvent.click(button);
     fireEvent.click(button);
     expect(screen.getByTestId('geojson-layer')).toBeInTheDocument();
