@@ -81,7 +81,11 @@ export default function MobileRoutePanel({
   const [expanded, setExpanded] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [translateY, setTranslateY] = useState(0);
   const dragStartY = useRef(0);
+  const dragStartTime = useRef(0);
+  const wasDragged = useRef(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   const routesWithConfidence = routes.map((route) => ({
     route,
@@ -102,29 +106,74 @@ export default function MobileRoutePanel({
     if (selectedStation) setExpanded(true);
   }, [selectedStation]);
 
-  // Swipe gestures on drag handle
+  const hasRoutes = routesWithConfidence.length > 0;
+
+  // --- Smooth swipe gesture handlers ---
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY;
+    dragStartTime.current = Date.now();
+    wasDragged.current = false;
     setIsDragging(true);
+    setTranslateY(0);
   }, []);
 
-  const hasRoutes = routesWithConfidence.length > 0;
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const deltaY = e.touches[0].clientY - dragStartY.current;
+    if (Math.abs(deltaY) > 5) wasDragged.current = true;
+    if (expanded) {
+      // Only allow downward drag when expanded
+      setTranslateY(Math.max(0, deltaY));
+    } else {
+      // Only allow upward drag when collapsed
+      setTranslateY(Math.min(0, deltaY));
+    }
+  }, [expanded]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
+    const elapsed = Date.now() - dragStartTime.current;
+    const velocity = Math.abs(deltaY) / Math.max(elapsed, 1);
+
     setIsDragging(false);
-    if (deltaY > 60) {
-      if (expanded) {
+
+    // If no real drag occurred, let click handler deal with taps
+    if (!wasDragged.current) {
+      setTranslateY(0);
+      return;
+    }
+
+    const sheetHeight = sheetRef.current?.offsetHeight ?? window.innerHeight * 0.65;
+    const threshold = sheetHeight * 0.3;
+
+    if (expanded) {
+      // Fast swipe down or dragged past 30%: collapse
+      if ((velocity > 0.5 && deltaY > 0) || deltaY > threshold) {
         setExpanded(false);
         // Station-only view: dismiss station on swipe down
         if (selectedStation && !hasRoutes && !routeLoading && !routeError) {
           onCloseStation();
         }
       }
-    } else if (deltaY < -60) {
-      setExpanded(true);
+    } else {
+      // Fast swipe up or dragged past 30%: expand
+      if ((velocity > 0.5 && deltaY < 0) || deltaY < -threshold) {
+        setExpanded(true);
+      }
     }
+
+    // Animate back to resting position
+    setTranslateY(0);
   }, [expanded, selectedStation, hasRoutes, routeLoading, routeError, onCloseStation]);
+
+  const handleDragClick = useCallback(() => {
+    if (wasDragged.current) return;
+    setExpanded((prev) => !prev);
+  }, []);
+
+  const handlePeekClick = useCallback(() => {
+    if (wasDragged.current) return;
+    setExpanded(true);
+  }, []);
 
   if (!hasContent) return null;
 
@@ -132,46 +181,59 @@ export default function MobileRoutePanel({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[45] transition-all duration-300 ease-out"
-      style={{ maxHeight: expanded ? '65vh' : '80px' }}
+      ref={sheetRef}
+      className="fixed bottom-0 left-0 right-0 z-[45]"
+      style={{
+        maxHeight: expanded ? '65vh' : '80px',
+        transform: `translateY(${translateY}px)`,
+        transition: isDragging
+          ? 'max-height 0.3s ease-out'
+          : 'max-height 0.3s ease-out, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
+      }}
       data-testid="mobile-route-panel"
     >
       {/* Bottom sheet container */}
       <div className="bg-white rounded-t-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.15)] h-full flex flex-col">
-        {/* Drag handle */}
+        {/* Drag header zone — entire top area is touch-draggable */}
         <div
-          className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none"
+          className="touch-none select-none"
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={() => setExpanded(!expanded)}
-          aria-hidden="true"
         >
-          <div className={`w-10 h-1 rounded-full transition-all ${isDragging ? 'bg-gray-400 scale-x-110' : 'bg-gray-300'}`} />
-        </div>
-
-        {/* Collapsed peek: show summary */}
-        {!expanded && routesWithConfidence.length > 0 && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="px-4 pb-3 flex items-center justify-between w-full text-left min-h-[48px]"
+          {/* Drag handle */}
+          <div
+            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+            onClick={handleDragClick}
+            aria-hidden="true"
           >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🗺️</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {routesWithConfidence.length} ruta{routesWithConfidence.length > 1 ? 's' : ''} disponible{routesWithConfidence.length > 1 ? 's' : ''} · ~{formatDuration(routesWithConfidence[0].route.total_time_seconds)}
-              </span>
-            </div>
-            <span className="text-xs text-gray-500">Toca para ver</span>
-          </button>
-        )}
-
-        {/* Loading peek */}
-        {!expanded && routeLoading && (
-          <div className="px-4 pb-3 flex items-center gap-3">
-            <div className="animate-spin h-5 w-5 border-2 border-primary-500 border-t-transparent rounded-full" />
-            <span className="text-sm text-gray-500">Calculando rutas...</span>
+            <div className={`w-10 h-1 rounded-full transition-all ${isDragging ? 'bg-gray-400 scale-x-110' : 'bg-gray-300'}`} />
           </div>
-        )}
+
+          {/* Collapsed peek: show summary */}
+          {!expanded && routesWithConfidence.length > 0 && (
+            <button
+              onClick={handlePeekClick}
+              className="px-4 pb-3 flex items-center justify-between w-full text-left min-h-[48px]"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🗺️</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {routesWithConfidence.length} ruta{routesWithConfidence.length > 1 ? 's' : ''} disponible{routesWithConfidence.length > 1 ? 's' : ''} · ~{formatDuration(routesWithConfidence[0].route.total_time_seconds)}
+                </span>
+              </div>
+              <span className="text-xs text-gray-500">Toca para ver</span>
+            </button>
+          )}
+
+          {/* Loading peek */}
+          {!expanded && routeLoading && (
+            <div className="px-4 pb-3 flex items-center gap-3">
+              <div className="animate-spin h-5 w-5 border-2 border-primary-500 border-t-transparent rounded-full" />
+              <span className="text-sm text-gray-500">Calculando rutas...</span>
+            </div>
+          )}
+        </div>
 
         {/* Expanded content */}
         {expanded && (
