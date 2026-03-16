@@ -2,6 +2,7 @@ import { CircleMarker } from 'react-leaflet';
 import type { StationData } from '../../types/index.ts';
 import type { BikeType } from '../../services/bikeTypeFilter.ts';
 import { getMarkerColor } from '../../utils/stationColors.ts';
+import { useIsMobile } from '../../hooks/useIsMobile.ts';
 import StationPopup from './StationPopup.tsx';
 
 interface StationMarkersProps {
@@ -17,6 +18,8 @@ export default function StationMarkers({
   onStationSelect,
   preferredBikeType = 'any',
 }: StationMarkersProps) {
+  const isMobile = useIsMobile();
+
   return (
     <>
       {stations.map((station) => {
@@ -36,7 +39,10 @@ export default function StationMarkers({
               click: () => onStationSelect?.(station),
             }}
           >
-            <StationPopup station={station} preferredBikeType={preferredBikeType} />
+            {/* On mobile, station info shows in bottom sheet only — no map popup */}
+            {!isMobile && (
+              <StationPopup station={station} preferredBikeType={preferredBikeType} />
+            )}
           </CircleMarker>
         );
       })}

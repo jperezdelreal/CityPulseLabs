@@ -108,15 +108,23 @@ export default function MobileRoutePanel({
     setIsDragging(true);
   }, []);
 
+  const hasRoutes = routesWithConfidence.length > 0;
+
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
     setIsDragging(false);
-    if (deltaY > 60 && !hasContent) {
-      setExpanded(false);
+    if (deltaY > 60) {
+      if (expanded) {
+        setExpanded(false);
+        // Station-only view: dismiss station on swipe down
+        if (selectedStation && !hasRoutes && !routeLoading && !routeError) {
+          onCloseStation();
+        }
+      }
     } else if (deltaY < -60) {
       setExpanded(true);
     }
-  }, [hasContent]);
+  }, [expanded, selectedStation, hasRoutes, routeLoading, routeError, onCloseStation]);
 
   if (!hasContent) return null;
 
@@ -323,7 +331,7 @@ export default function MobileRoutePanel({
               </>
             )}
 
-            {/* Station info */}
+            {/* Station info — no ✕ button; swipe down to dismiss */}
             {selectedStation && (
               <div className="border-t border-gray-100">
                 <StationPanel
@@ -331,7 +339,6 @@ export default function MobileRoutePanel({
                   loading={stationsLoading}
                   error={stationsError}
                   lastUpdated={lastUpdated}
-                  onClose={onCloseStation}
                   preferredBikeType={bikeType}
                 />
               </div>
