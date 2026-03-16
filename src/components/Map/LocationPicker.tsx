@@ -64,7 +64,7 @@ export default function LocationPicker({
       <MapClickHandler origin={origin} onSetOrigin={onSetOrigin} onSetDestination={onSetDestination} />
 
       {instructionText && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[999] pointer-events-none">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[999] pointer-events-none max-w-[90vw]">
           <div className="bg-gray-900/80 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium whitespace-nowrap">
             {instructionText}
           </div>
