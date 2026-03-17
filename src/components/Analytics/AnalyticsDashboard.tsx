@@ -22,10 +22,21 @@ export default function AnalyticsDashboard() {
           setData(result);
           setLoading(false);
         }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Error cargando analíticas');
-          setLoading(false);
+      } catch {
+        // Cosmos API unavailable — fall back to mock data
+        try {
+          const { MockAnalyticsProvider } = await import('../../services/analyticsData.ts');
+          const fallback = new MockAnalyticsProvider();
+          const result = await fallback.fetchAnalytics();
+          if (!cancelled) {
+            setData(result);
+            setLoading(false);
+          }
+        } catch (fallbackErr) {
+          if (!cancelled) {
+            setError(fallbackErr instanceof Error ? fallbackErr.message : 'Error cargando analíticas');
+            setLoading(false);
+          }
         }
       }
     }

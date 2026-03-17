@@ -1,7 +1,7 @@
 /**
- * Mock analytics data service.
- * Generates realistic BiciCoruña usage patterns.
- * Switch to CosmosAnalyticsProvider when real data is available.
+ * Analytics data service with real Cosmos DB backend.
+ * CosmosAnalyticsProvider queries the /api/analytics endpoint (backed by Cosmos DB).
+ * MockAnalyticsProvider retained as fallback when API is unavailable.
  */
 
 import type {
@@ -13,7 +13,30 @@ import type {
   HeatmapCell,
 } from '../types/analytics.ts';
 
-// Real BiciCoruña station names and approximate coordinates
+// ---------------------------------------------------------------------------
+// Cosmos-backed provider — queries real station data via Azure Function
+// ---------------------------------------------------------------------------
+
+const ANALYTICS_API_URL = '/api/analytics';
+
+export class CosmosAnalyticsProvider implements AnalyticsProvider {
+  async fetchAnalytics(): Promise<AnalyticsData> {
+    const { fetchWithRetry } = await import('../utils/retry.ts');
+    const res = await fetchWithRetry(ANALYTICS_API_URL, undefined, { timeoutMs: 10_000 });
+
+    if (!res.ok) {
+      throw new Error(`Analytics API error: ${res.status}`);
+    }
+
+    const data = await res.json() as AnalyticsData;
+    return data;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock provider — fallback for development/offline
+// ---------------------------------------------------------------------------
+
 const MOCK_STATIONS = [
   { id: '1', name: 'Plaza de María Pita', lat: 43.3713, lon: -8.3964 },
   { id: '2', name: 'Estación de Tren', lat: 43.3545, lon: -8.4101 },
@@ -27,7 +50,6 @@ const MOCK_STATIONS = [
   { id: '10', name: 'Obelisco', lat: 43.3687, lon: -8.3948 },
 ];
 
-/** Realistic weekday hourly pattern: commute peaks at 8–9 and 17–19 */
 function generateWeekdayHourly(): HourlyUsage[] {
   const pattern = [
     5, 3, 2, 1, 1, 3, 12, 35, 72, 58, 32, 28,
@@ -40,7 +62,6 @@ function generateWeekdayHourly(): HourlyUsage[] {
   }));
 }
 
-/** Weekend pattern: later start, more distributed, leisure peak at 11–14 */
 function generateWeekendHourly(): HourlyUsage[] {
   const pattern = [
     3, 2, 1, 1, 1, 2, 5, 12, 22, 35, 48, 55,
@@ -93,11 +114,8 @@ function generateHeatmap(): HeatmapCell[] {
 
 export class MockAnalyticsProvider implements AnalyticsProvider {
   async fetchAnalytics(): Promise<AnalyticsData> {
-    // Simulate network latency
     await new Promise((r) => setTimeout(r, 300));
-
     const isWeekend = [0, 6].includes(new Date().getDay());
-
     return {
       hourlyUsage: isWeekend ? generateWeekendHourly() : generateWeekdayHourly(),
       topStations: generateTopStations(),
@@ -109,8 +127,11 @@ export class MockAnalyticsProvider implements AnalyticsProvider {
   }
 }
 
-// Default provider — swap to CosmosAnalyticsProvider when available
-let activeProvider: AnalyticsProvider = new MockAnalyticsProvider();
+// ---------------------------------------------------------------------------
+// Provider management — uses Cosmos by default, falls back to mock
+// ---------------------------------------------------------------------------
+
+let activeProvider: AnalyticsProvider = new CosmosAnalyticsProvider();
 
 export function setAnalyticsProvider(provider: AnalyticsProvider): void {
   activeProvider = provider;
