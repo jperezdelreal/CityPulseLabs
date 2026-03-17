@@ -182,13 +182,13 @@ export default function MobileRoutePanel({
   return (
     <div
       ref={sheetRef}
-      className="fixed bottom-0 left-0 right-0 z-[45]"
+      className="fixed bottom-0 left-0 right-0 z-[45] overflow-hidden"
       style={{
-        maxHeight: expanded ? '65vh' : '80px',
+        height: expanded ? '65vh' : '80px',
         transform: `translateY(${translateY}px)`,
         transition: isDragging
-          ? 'max-height 0.3s ease-out'
-          : 'max-height 0.3s ease-out, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
+          ? 'height 0.3s ease-out'
+          : 'height 0.3s ease-out, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
       }}
       data-testid="mobile-route-panel"
     >
@@ -237,7 +237,7 @@ export default function MobileRoutePanel({
 
         {/* Expanded content */}
         {expanded && (
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
             {/* Loading */}
             {routeLoading && (
               <div className="px-4 py-6">

@@ -102,7 +102,7 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
     expect(screen.getByTestId('mobile-route-panel')).toBeInTheDocument();
   });
 
-  it('bottom sheet starts collapsed (maxHeight: 80px) when routes arrive', () => {
+  it('bottom sheet starts collapsed (height: 80px) when routes arrive', () => {
     const routes = [makeRoute()];
     const stations = [
       makeStation({ station_id: 'pickup', name: 'Pickup Station' }),
@@ -113,7 +113,7 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
     const panel = container.querySelector('[data-testid="mobile-route-panel"]') as HTMLElement;
     
     // Should start collapsed
-    expect(panel.style.maxHeight).toBe('80px');
+    expect(panel.style.height).toBe('80px');
   });
 
   it('bottom sheet auto-expands when selectedStation changes', () => {
@@ -127,7 +127,7 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
 
     // Initially collapsed
     const panel = container.querySelector('[data-testid="mobile-route-panel"]') as HTMLElement;
-    expect(panel.style.maxHeight).toBe('80px');
+    expect(panel.style.height).toBe('80px');
 
     // Select a station → should auto-expand
     rerender(
@@ -139,7 +139,7 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
       />
     );
 
-    expect(panel.style.maxHeight).toBe('65vh');
+    expect(panel.style.height).toBe('65vh');
   });
 
   it('peek bar tap expands the sheet', () => {
@@ -153,14 +153,14 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
     
     // Initially collapsed
     const panel = container.querySelector('[data-testid="mobile-route-panel"]') as HTMLElement;
-    expect(panel.style.maxHeight).toBe('80px');
+    expect(panel.style.height).toBe('80px');
 
     // Click peek bar button
     const peekButton = screen.getByText(/Toca para ver/i).closest('button');
     fireEvent.click(peekButton!);
 
     // Should expand
-    expect(panel.style.maxHeight).toBe('65vh');
+    expect(panel.style.height).toBe('65vh');
   });
 
   it('drag handle click toggles expansion', () => {
@@ -176,15 +176,15 @@ describe('MobileRoutePanel — Bottom Sheet Behavior', () => {
     const dragHandle = container.querySelector('.cursor-grab') as HTMLElement;
 
     // Initially collapsed
-    expect(panel.style.maxHeight).toBe('80px');
+    expect(panel.style.height).toBe('80px');
 
     // Click drag handle → expand
     fireEvent.click(dragHandle);
-    expect(panel.style.maxHeight).toBe('65vh');
+    expect(panel.style.height).toBe('65vh');
 
     // Click again → collapse
     fireEvent.click(dragHandle);
-    expect(panel.style.maxHeight).toBe('80px');
+    expect(panel.style.height).toBe('80px');
   });
 });
 
